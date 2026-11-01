@@ -3,8 +3,7 @@
 Página que mostra o que o seu dinheiro paga na vida real: quanto um valor investido (ou gasto) representa em meses de conta de luz, internet, celular, mercado e viagem, todo ano, para sempre.
 
 - Modo **Investir** e modo **Gastar**
-- Sliders de valor, aporte mensal e anos, com desconto da inflação
-- O "para sempre" usa só o ganho acima da inflação
+- Sliders de valor, aporte mensal e anos
 - Preços médios editáveis, salvos no navegador
 
 Site: https://kaique-fhs.github.io/motivar-investir/

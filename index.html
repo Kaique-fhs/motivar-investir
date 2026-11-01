@@ -113,7 +113,6 @@
 
     <div class="taxas">
       <label>Rendimento <input id="taxa" inputmode="decimal"> % ao ano</label>
-      <label>Inflação <input id="inflacao" inputmode="decimal"> % ao ano</label>
     </div>
 
     <p class="manchete" id="manchete"></p>
@@ -134,7 +133,7 @@
 
 <script>
 const PADRAO = {
-  valor: 10000, aporte: 0, anos: 0, taxa: 10, inflacao: 4.5, modo: "investir", oque: "",
+  valor: 5000, aporte: 0, anos: 0, taxa: 10, modo: "investir", oque: "",
   precos: { luz:180, internet:100, celular:60, mercado:800, viagem:3000, restaurante:150, cinema:60 }
 };
 const ITENS = [
@@ -149,7 +148,7 @@ const ITENS = [
   { id:"cinema",      nome:"Cinema",     ic:"🎬", grupo:"lazer", unidade:"vez", feminino:true, um:"ida ao cinema", varios:"idas ao cinema",
     porAno:12, rotuloPreco:"Custa por ida",    metaTxt:"uma ida por mês" }
 ];
-const CHAVE = "consequencia-do-dinheiro-v1";
+const CHAVE = "motivar-investir-v2";
 
 let estado = structuredClone(PADRAO);
 try {
@@ -200,14 +199,10 @@ const sliderDoAporte = v => Math.round(100 * Math.sqrt(Math.min(v,10000) / 10000
 /* ---------- conta ---------- */
 function calcular(){
   const P = estado.valor, A = estado.aporte, N = estado.anos;
-  const r = estado.taxa / 100, i = estado.inflacao / 100;
+  const r = estado.taxa / 100;
   const rm = (1 + r) ** (1/12) - 1;
   const futuro = P * (1 + r) ** N + (rm > 0 ? A * ((1 + rm) ** (12*N) - 1) / rm : A * 12 * N);
-  const deflator = (1 + i) ** N;
-  const saldoHoje = futuro / deflator;          // em dinheiro de hoje
-  // "para sempre" de verdade: só se retira o ganho acima da inflação, assim o dinheiro guardado não encolhe
-  const real = (1 + r) / (1 + i) - 1;
-  return { r: real, futuro, saldoHoje, rendaHoje: saldoHoje * Math.max(real, 0), doBolso: P + A * 12 * N };
+  return { r, futuro, saldoHoje: futuro, rendaHoje: futuro * r, doBolso: P + A * 12 * N };
 }
 
 /* ---------- monta cartões ---------- */
@@ -233,14 +228,13 @@ for (const it of ITENS){
 /* ---------- liga os controles ---------- */
 const $ = id => document.getElementById(id);
 const $valor = $("valor"), $valorS = $("valorSlider"), $aporteS = $("aporteSlider"), $anosS = $("anosSlider");
-const $taxa = $("taxa"), $infl = $("inflacao"), $oque = $("oque");
+const $taxa = $("taxa"), $oque = $("oque");
 
 $valor.value = brl(estado.valor);
 $valorS.value = sliderDoValor(estado.valor);
 $aporteS.value = sliderDoAporte(estado.aporte);
 $anosS.value = estado.anos;
 $taxa.value = String(estado.taxa).replace(".",",");
-$infl.value = String(estado.inflacao).replace(".",",");
 $oque.value = estado.oque;
 
 $valor.addEventListener("input", () => {
@@ -257,7 +251,6 @@ $valorS.addEventListener("input", () => {
 $aporteS.addEventListener("input", () => { estado.aporte = aporteDoSlider(Number($aporteS.value)); salvar(); atualizar(); });
 $anosS.addEventListener("input", () => { estado.anos = Number($anosS.value); salvar(); atualizar(); });
 $taxa.addEventListener("input", () => { estado.taxa = numDec($taxa.value); salvar(); atualizar(); });
-$infl.addEventListener("input", () => { estado.inflacao = numDec($infl.value); salvar(); atualizar(); });
 $oque.addEventListener("input", () => { estado.oque = $oque.value; salvar(); atualizar(); });
 document.querySelectorAll("[data-modo]").forEach(b => b.addEventListener("click", () => {
   estado.modo = b.dataset.modo; salvar(); atualizar();
@@ -294,12 +287,7 @@ function atualizar(){
     `Em ${N} ${plural(N,"ano","anos")} você terá <b>${brl(c.saldoHoje)}</b>, que te pagam <b>${brl(c.rendaHoje)} todo ano</b>, ${SEMPRE}.`;
   caber(manchete);
 
-  const pct = v => (Math.round(v * 1000) / 10).toLocaleString("pt-BR");
-  const regra = c.r > 0
-    ? `O “para sempre” usa só o ganho acima da inflação (${pct(c.r)}% ao ano), para o dinheiro guardado não encolher.`
-    : "Com esse rendimento abaixo da inflação, nada fica pago para sempre: o dinheiro encolhe.";
-  nota.textContent = N === 0 ? regra :
-    `${regra} Valores em dinheiro de hoje (sem descontar a inflação: ${brl(c.futuro)}). ` +
+  nota.textContent = N === 0 ? "" :
     `${gastar ? "Saem do bolso" : "Do seu bolso saem"} ${brl(c.doBolso)}; o resto são juros.`;
 
   for (const it of ITENS){
