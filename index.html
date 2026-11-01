@@ -60,9 +60,8 @@
   .grupo{margin-bottom:28px}
   .grupo h2{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
   .linha{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .linha.lazer{grid-template-columns:minmax(0,1fr);max-width:calc((100% - 42px)/4)}
-  @media (max-width:820px){ .linha{grid-template-columns:repeat(2,1fr)} .linha.lazer{max-width:calc((100% - 14px)/2)} }
-  @media (max-width:440px){ .linha{grid-template-columns:1fr} .linha.lazer{max-width:none} }
+  @media (max-width:820px){ .linha{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:440px){ .linha{grid-template-columns:1fr} }
   .cartao{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;
     display:flex;flex-direction:column;gap:10px}
   .cab{display:flex;align-items:center;gap:8px;font-weight:600}
@@ -136,14 +135,19 @@
 <script>
 const PADRAO = {
   valor: 10000, aporte: 0, anos: 0, taxa: 10, inflacao: 4.5, modo: "investir", oque: "",
-  precos: { luz:180, internet:100, celular:60, mercado:800, viagem:3000 }
+  precos: { luz:180, internet:100, celular:60, mercado:800, viagem:3000, restaurante:150, cinema:60 }
 };
 const ITENS = [
   { id:"luz",      nome:"Conta de luz", ic:"💡", grupo:"obrigacoes", unidade:"mês" },
   { id:"internet", nome:"Internet",     ic:"🌐", grupo:"obrigacoes", unidade:"mês" },
   { id:"celular",  nome:"Celular",      ic:"📱", grupo:"obrigacoes", unidade:"mês" },
   { id:"mercado",  nome:"Mercado",      ic:"🛒", grupo:"obrigacoes", unidade:"mês" },
-  { id:"viagem",   nome:"Viagem",       ic:"✈️", grupo:"lazer",      unidade:"viagem" }
+  { id:"viagem",      nome:"Viagem",     ic:"✈️", grupo:"lazer", unidade:"vez", feminino:true, um:"viagem", varios:"viagens",
+    porAno:1,  rotuloPreco:"Custa por viagem", metaTxt:"uma viagem por ano" },
+  { id:"restaurante", nome:"Restaurante", ic:"🍽️", grupo:"lazer", unidade:"vez", um:"jantar fora", varios:"jantares fora",
+    porAno:12, rotuloPreco:"Custa por saída",  metaTxt:"um jantar fora por mês" },
+  { id:"cinema",      nome:"Cinema",     ic:"🎬", grupo:"lazer", unidade:"vez", feminino:true, um:"ida ao cinema", varios:"idas ao cinema",
+    porAno:12, rotuloPreco:"Custa por ida",    metaTxt:"uma ida por mês" }
 ];
 const CHAVE = "consequencia-do-dinheiro-v1";
 
@@ -172,11 +176,11 @@ function tempo(meses){
   const pm = m ? m + " " + plural(m,"mês","meses") : "";
   return [pa,pm].filter(Boolean).join(" e ");
 }
-function viagens(v){
+function vezes(v, it){
   if (v <= 0) return "nada";
-  if (v < 1) return Math.round(v*100) + "% de uma viagem";
-  const r = Math.round(v*10)/10;
-  return r.toLocaleString("pt-BR") + " " + plural(r,"viagem","viagens");
+  if (v < 1) return Math.round(v*100) + "% de " + (it.feminino ? "uma " : "um ") + it.um;
+  const r = v < 10 ? Math.round(v*10)/10 : Math.floor(v);
+  return r.toLocaleString("pt-BR") + " " + plural(r, it.um, it.varios);
 }
 
 /* ---------- sliders ---------- */
@@ -216,7 +220,7 @@ for (const it of ITENS){
     <div class="sub" data-sub></div>
     ${it.unidade === "mês" ? '<div class="meses" data-meses aria-hidden="true">' + "<span><i></i></span>".repeat(12) + "</div>" : ""}
     <div class="meta" data-meta><span data-meta-txt></span><div class="barra"><i data-meta-barra></i></div></div>
-    <label class="preco">${it.unidade === "mês" ? "Custa por mês" : "Custa por viagem"}
+    <label class="preco">${it.rotuloPreco || "Custa por mês"}
       <input data-preco="${it.id}" inputmode="numeric"></label>`;
   document.getElementById(it.grupo).appendChild(el);
   it.el = el;
@@ -301,26 +305,29 @@ function atualizar(){
   for (const it of ITENS){
     const preco = estado.precos[it.id];
     const qtd = preco ? c.rendaHoje / preco : 0;
-    const res = it.unidade === "mês" ? tempo(qtd) : viagens(qtd);
+    const porMes = it.unidade === "mês";
+    const res = porMes ? tempo(qtd) : vezes(qtd, it);
     it.el.querySelector("[data-res]").textContent = (gastar && qtd > 0 ? "− " : "") + res;
     it.el.querySelector("[data-sub]").textContent = !preco ? "Informe o preço abaixo." :
-      gastar ? `de ${it.nome.toLowerCase()} que você deixa de ter, todo ano`
-             : `de ${it.nome.toLowerCase()} pagos pelo rendimento, todo ano`;
+      porMes ? (gastar ? `de ${it.nome.toLowerCase()} que você deixa de ter, todo ano`
+                       : `de ${it.nome.toLowerCase()} pagos pelo rendimento, todo ano`)
+             : (gastar ? "que você deixa de fazer, todo ano" : (it.feminino ? "pagas" : "pagos") + " pelo rendimento, todo ano");
     it.el.querySelectorAll("[data-meses] i").forEach((b,k) => {
       b.style.width = Math.max(0, Math.min(1, qtd - k)) * 100 + "%";
     });
 
     // meta: quanto precisa ter investido para essa conta ficar paga o ano todo, para sempre
     const meta = it.el.querySelector("[data-meta]");
-    const custoAno = it.unidade === "mês" ? preco * 12 : preco;
+    const custoAno = preco * (porMes ? 12 : it.porAno);
     if (gastar || !preco || c.r <= 0){ meta.hidden = true; continue; }
     meta.hidden = false;
     const alvo = custoAno / c.r;
     const pct = Math.min(1, c.saldoHoje / alvo);
     meta.classList.toggle("ok", pct >= 1);
+    const oQue = porMes ? "o ano todo" : it.metaTxt;
     meta.querySelector("[data-meta-txt]").textContent = pct >= 1
-      ? "✓ Paga o ano todo, para sempre"
-      : `Para pagar o ano todo, para sempre: ${brl(alvo)} (${Math.floor(pct*100)}%)`;
+      ? `✓ Paga ${oQue}, para sempre`
+      : `Para pagar ${oQue}, para sempre: ${brl(alvo)} (${Math.floor(pct*100)}%)`;
     meta.querySelector("[data-meta-barra]").style.width = pct * 100 + "%";
   }
 }
