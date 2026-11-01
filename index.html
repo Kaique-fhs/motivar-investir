@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motivar Investir</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --surface:#ffffff; --ink:#1d2320; --muted:#6b726e; --line:#e3e0d8;
+    --accent:#2f8a57; --accent-soft:#e3f2e8; --loss:#c2412d; --loss-soft:#fbe7e3;
+    --track:#ece9e2; --destaque:#c77700;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141816; --surface:#1d2320; --ink:#eef1ee; --muted:#9aa39e; --line:#2c3430;
+      --accent:#5cc189; --accent-soft:#1f3328; --loss:#ef7a66; --loss-soft:#3a2420;
+      --track:#2a312d; --destaque:#f5b942;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+  main{max-width:1040px;margin:0 auto;padding:40px 16px 64px}
+  body.gastar{--cor:var(--loss);--cor-soft:var(--loss-soft)}
+  body:not(.gastar){--cor:var(--accent);--cor-soft:var(--accent-soft)}
+  input[type=range]{accent-color:var(--cor);width:100%;margin:0;cursor:pointer}
+
+  /* topo */
+  .topo{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;margin-bottom:40px}
+  h1{font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+  .abas{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+  .abas button{border:0;background:none;color:var(--muted);font:inherit;font-weight:600;
+    padding:8px 22px;border-radius:999px;cursor:pointer}
+  .abas button[aria-pressed="true"]{background:var(--cor);color:#fff}
+  .campo{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(460px,100%)}
+  .campo label{font-size:14px;color:var(--muted)}
+  .valor{font-size:clamp(40px,8vw,64px);font-weight:700;text-align:center;width:100%;
+    border:0;border-bottom:3px solid var(--cor);background:none;color:var(--ink);padding:4px 0;outline:none}
+  .oque{font-size:16px;text-align:center;width:min(320px,100%);border:1px solid var(--line);
+    background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 12px;outline:none}
+  .oque:focus{border-color:var(--cor)}
+  .escala{display:flex;justify-content:space-between;width:100%;font-size:11px;color:var(--muted)}
+
+  .controles{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(760px,100%)}
+  @media (max-width:600px){ .controles{grid-template-columns:1fr} }
+  .ctl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left}
+  .ctl .topo-ctl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+  .ctl .nome{font-size:13px;color:var(--muted)}
+  .ctl .num{font-size:20px;font-weight:700}
+
+  .taxas{font-size:14px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+  .taxas input{width:56px;font:inherit;text-align:center;border:1px solid var(--line);border-radius:6px;
+    background:var(--surface);color:var(--ink);padding:3px}
+  .manchete{font-size:28px;width:100%;margin:8px 0 0;white-space:nowrap;overflow:hidden}
+  .manchete b{color:var(--cor)}
+  .manchete .sempre{color:var(--destaque);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+  .nota{font-size:13px;color:var(--muted);margin:-6px 0 0;max-width:680px}
+
+  /* cartões */
+  .grupo{margin-bottom:28px}
+  .grupo h2{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  .linha{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .linha.lazer{grid-template-columns:minmax(0,1fr);max-width:calc((100% - 42px)/4)}
+  @media (max-width:820px){ .linha{grid-template-columns:repeat(2,1fr)} .linha.lazer{max-width:calc((100% - 14px)/2)} }
+  @media (max-width:440px){ .linha{grid-template-columns:1fr} .linha.lazer{max-width:none} }
+  .cartao{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;
+    display:flex;flex-direction:column;gap:10px}
+  .cab{display:flex;align-items:center;gap:8px;font-weight:600}
+  .ic{font-size:22px}
+  .resultado{font-size:26px;font-weight:700;color:var(--cor);line-height:1.15}
+  .sub{font-size:13px;color:var(--muted);min-height:2.6em}
+  .meses{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+  .meses span{height:8px;border-radius:2px;background:var(--track);overflow:hidden;position:relative}
+  .meses span i{position:absolute;inset:0 auto 0 0;background:var(--cor)}
+  .meta{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:5px}
+  .meta .barra{height:5px;border-radius:3px;background:var(--track);overflow:hidden}
+  .meta .barra i{display:block;height:100%;background:var(--destaque)}
+  .meta.ok{color:var(--destaque);font-weight:600}
+  .preco{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);
+    border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+  .preco input{width:84px;font:inherit;border:1px solid var(--line);border-radius:6px;
+    background:var(--bg);color:var(--ink);padding:4px 6px;text-align:right}
+  .rodape{text-align:center;font-size:12px;color:var(--muted);margin-top:24px}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <section class="topo">
+    <h1>O que seu dinheiro paga</h1>
+    <div class="abas" role="group" aria-label="Modo">
+      <button type="button" data-modo="investir" aria-pressed="true">Investir</button>
+      <button type="button" data-modo="gastar" aria-pressed="false">Gastar</button>
+    </div>
+
+    <div class="campo">
+      <label for="valor" id="rotulo">Quanto você vai investir?</label>
+      <input id="valor" class="valor" inputmode="numeric" autocomplete="off">
+      <input id="valorSlider" type="range" min="0" max="1000" step="1" aria-label="Valor">
+      <div class="escala"><span>R$ 100</span><span>R$ 1 mil</span><span>R$ 10 mil</span><span>R$ 100 mil</span><span>R$ 1 mi</span></div>
+      <input id="oque" class="oque" placeholder="Com o quê? (ex.: tênis)" hidden>
+    </div>
+
+    <div class="controles">
+      <div class="ctl">
+        <div class="topo-ctl"><span class="nome" id="rotuloAporte">Guardar todo mês</span><span class="num" id="aporteNum"></span></div>
+        <input id="aporteSlider" type="range" min="0" max="100" step="1" aria-labelledby="rotuloAporte">
+      </div>
+      <div class="ctl">
+        <div class="topo-ctl"><span class="nome" id="rotuloAnos">Daqui a quantos anos</span><span class="num" id="anosNum"></span></div>
+        <input id="anosSlider" type="range" min="0" max="30" step="1" aria-labelledby="rotuloAnos">
+      </div>
+    </div>
+
+    <div class="taxas">
+      <label>Rendimento <input id="taxa" inputmode="decimal"> % ao ano</label>
+      <label>Inflação <input id="inflacao" inputmode="decimal"> % ao ano</label>
+    </div>
+
+    <p class="manchete" id="manchete"></p>
+    <p class="nota" id="nota"></p>
+  </section>
+
+  <section class="grupo">
+    <h2>Obrigações</h2>
+    <div class="linha" id="obrigacoes"></div>
+  </section>
+  <section class="grupo">
+    <h2>Lazer</h2>
+    <div class="linha lazer" id="lazer"></div>
+  </section>
+
+  <p class="rodape">Os preços dos cartões são médias de hoje e podem ser editados. O que você muda fica salvo neste navegador.</p>
+</main>
+
+<script>
+const PADRAO = {
+  valor: 10000, aporte: 0, anos: 0, taxa: 10, inflacao: 4.5, modo: "investir", oque: "",
+  precos: { luz:180, internet:100, celular:60, mercado:800, viagem:3000 }
+};
+const ITENS = [
+  { id:"luz",      nome:"Conta de luz", ic:"💡", grupo:"obrigacoes", unidade:"mês" },
+  { id:"internet", nome:"Internet",     ic:"🌐", grupo:"obrigacoes", unidade:"mês" },
+  { id:"celular",  nome:"Celular",      ic:"📱", grupo:"obrigacoes", unidade:"mês" },
+  { id:"mercado",  nome:"Mercado",      ic:"🛒", grupo:"obrigacoes", unidade:"mês" },
+  { id:"viagem",   nome:"Viagem",       ic:"✈️", grupo:"lazer",      unidade:"viagem" }
+];
+const CHAVE = "consequencia-do-dinheiro-v1";
+
+let estado = structuredClone(PADRAO);
+try {
+  const salvo = JSON.parse(localStorage.getItem(CHAVE) || "null");
+  if (salvo) estado = { ...estado, ...salvo, precos: { ...PADRAO.precos, ...(salvo.precos||{}) } };
+} catch(e) {}
+function salvar(){ try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch(e) {} }
+
+/* ---------- formatação ---------- */
+function brl(n){
+  const dec = Math.abs(n) < 100 && n % 1 ? 2 : 0;
+  return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+const soNumero = s => Number(String(s).replace(/\D/g,"")) || 0;
+const numDec = s => Number(String(s).replace(",",".")) || 0;
+const plural = (n,um,varios) => n === 1 ? um : varios;
+function escapar(s){ return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function tempo(meses){
+  if (meses <= 0) return "nada";
+  if (meses < 1){ const d = Math.max(1, Math.round(meses*30)); return d + " " + plural(d,"dia","dias"); }
+  const anos = Math.floor(meses/12), m = Math.floor(meses % 12);
+  const pa = anos ? anos + " " + plural(anos,"ano","anos") : "";
+  const pm = m ? m + " " + plural(m,"mês","meses") : "";
+  return [pa,pm].filter(Boolean).join(" e ");
+}
+function viagens(v){
+  if (v <= 0) return "nada";
+  if (v < 1) return Math.round(v*100) + "% de uma viagem";
+  const r = Math.round(v*10)/10;
+  return r.toLocaleString("pt-BR") + " " + plural(r,"viagem","viagens");
+}
+
+/* ---------- sliders ---------- */
+// valor: escala logarítmica de R$ 100 a R$ 1 milhão, parando em números redondos
+function redondo(v){
+  if (v <= 0) return 0;
+  const mag = 10 ** Math.floor(Math.log10(v));
+  const passo = mag / 2;                       // ex.: 10.000 → passos de 5.000
+  return Math.max(100, Math.round(v / passo) * passo);
+}
+const valorDoSlider = s => redondo(100 * 10 ** (4 * s / 1000));
+const sliderDoValor = v => Math.round(1000 * Math.log10(Math.min(Math.max(v,100),1e6) / 100) / 4);
+// aporte: curva quadrática de R$ 0 a R$ 10.000, de 50 em 50
+const aporteDoSlider = s => Math.round(10000 * (s/100) ** 2 / 50) * 50;
+const sliderDoAporte = v => Math.round(100 * Math.sqrt(Math.min(v,10000) / 10000));
+
+/* ---------- conta ---------- */
+function calcular(){
+  const P = estado.valor, A = estado.aporte, N = estado.anos;
+  const r = estado.taxa / 100, i = estado.inflacao / 100;
+  const rm = (1 + r) ** (1/12) - 1;
+  const futuro = P * (1 + r) ** N + (rm > 0 ? A * ((1 + rm) ** (12*N) - 1) / rm : A * 12 * N);
+  const deflator = (1 + i) ** N;
+  const saldoHoje = futuro / deflator;          // em dinheiro de hoje
+  // "para sempre" de verdade: só se retira o ganho acima da inflação, assim o dinheiro guardado não encolhe
+  const real = (1 + r) / (1 + i) - 1;
+  return { r: real, futuro, saldoHoje, rendaHoje: saldoHoje * Math.max(real, 0), doBolso: P + A * 12 * N };
+}
+
+/* ---------- monta cartões ---------- */
+for (const it of ITENS){
+  const el = document.createElement("article");
+  el.className = "cartao";
+  el.innerHTML = `
+    <div class="cab"><span class="ic" aria-hidden="true">${it.ic}</span>${it.nome}</div>
+    <div class="resultado" data-res></div>
+    <div class="sub" data-sub></div>
+    ${it.unidade === "mês" ? '<div class="meses" data-meses aria-hidden="true">' + "<span><i></i></span>".repeat(12) + "</div>" : ""}
+    <div class="meta" data-meta><span data-meta-txt></span><div class="barra"><i data-meta-barra></i></div></div>
+    <label class="preco">${it.unidade === "mês" ? "Custa por mês" : "Custa por viagem"}
+      <input data-preco="${it.id}" inputmode="numeric"></label>`;
+  document.getElementById(it.grupo).appendChild(el);
+  it.el = el;
+  const inp = el.querySelector("[data-preco]");
+  inp.value = brl(estado.precos[it.id]);
+  inp.addEventListener("input", () => { estado.precos[it.id] = soNumero(inp.value); salvar(); atualizar(); });
+  inp.addEventListener("blur", () => { inp.value = brl(estado.precos[it.id]); });
+}
+
+/* ---------- liga os controles ---------- */
+const $ = id => document.getElementById(id);
+const $valor = $("valor"), $valorS = $("valorSlider"), $aporteS = $("aporteSlider"), $anosS = $("anosSlider");
+const $taxa = $("taxa"), $infl = $("inflacao"), $oque = $("oque");
+
+$valor.value = brl(estado.valor);
+$valorS.value = sliderDoValor(estado.valor);
+$aporteS.value = sliderDoAporte(estado.aporte);
+$anosS.value = estado.anos;
+$taxa.value = String(estado.taxa).replace(".",",");
+$infl.value = String(estado.inflacao).replace(".",",");
+$oque.value = estado.oque;
+
+$valor.addEventListener("input", () => {
+  estado.valor = soNumero($valor.value);
+  $valor.value = estado.valor ? brl(estado.valor) : "";
+  $valorS.value = sliderDoValor(estado.valor);
+  salvar(); atualizar();
+});
+$valorS.addEventListener("input", () => {
+  estado.valor = valorDoSlider(Number($valorS.value));
+  $valor.value = brl(estado.valor);
+  salvar(); atualizar();
+});
+$aporteS.addEventListener("input", () => { estado.aporte = aporteDoSlider(Number($aporteS.value)); salvar(); atualizar(); });
+$anosS.addEventListener("input", () => { estado.anos = Number($anosS.value); salvar(); atualizar(); });
+$taxa.addEventListener("input", () => { estado.taxa = numDec($taxa.value); salvar(); atualizar(); });
+$infl.addEventListener("input", () => { estado.inflacao = numDec($infl.value); salvar(); atualizar(); });
+$oque.addEventListener("input", () => { estado.oque = $oque.value; salvar(); atualizar(); });
+document.querySelectorAll("[data-modo]").forEach(b => b.addEventListener("click", () => {
+  estado.modo = b.dataset.modo; salvar(); atualizar();
+}));
+
+/* ---------- desenha ---------- */
+const SEMPRE = '<span class="sempre">para sempre</span>';
+
+function atualizar(){
+  const gastar = estado.modo === "gastar";
+  const N = estado.anos;
+  document.body.classList.toggle("gastar", gastar);
+  document.querySelectorAll("[data-modo]").forEach(b => b.setAttribute("aria-pressed", b.dataset.modo === estado.modo));
+  $("rotulo").textContent = gastar ? "Quanto você vai gastar?" : "Quanto você vai investir?";
+  $("rotuloAporte").textContent = gastar ? "Gasto que se repete todo mês" : "Guardar todo mês";
+  $("aporteNum").textContent = brl(estado.aporte);
+  $("anosNum").textContent = N === 0 ? "hoje" : N + " " + plural(N,"ano","anos");
+  $oque.hidden = !gastar;
+
+  const c = calcular();
+  const coisa = estado.oque.trim();
+  const quem = coisa ? "“" + escapar(coisa) + "”" : "Esse gasto";
+  const manchete = $("manchete"), nota = $("nota");
+
+  if (!estado.valor && !estado.aporte) manchete.innerHTML = "Digite um valor.";
+  else if (N === 0 && !estado.valor) manchete.innerHTML = "Arraste os anos para ver o que o mês a mês vira.";
+  else if (gastar && N === 0) manchete.innerHTML =
+    `${quem} custa ${brl(estado.valor)} hoje… e mais <b>${brl(c.rendaHoje)} todo ano</b>, ${SEMPRE}.`;
+  else if (gastar) manchete.innerHTML =
+    `${quem}, em ${N} ${plural(N,"ano","anos")}, seria <b>${brl(c.saldoHoje)}</b> pagando <b>${brl(c.rendaHoje)} todo ano</b>, ${SEMPRE}.`;
+  else if (N === 0) manchete.innerHTML =
+    `${brl(estado.valor)} investidos te pagam <b>${brl(c.rendaHoje)} todo ano</b>, ${SEMPRE}.`;
+  else manchete.innerHTML =
+    `Em ${N} ${plural(N,"ano","anos")} você terá <b>${brl(c.saldoHoje)}</b>, que te pagam <b>${brl(c.rendaHoje)} todo ano</b>, ${SEMPRE}.`;
+  caber(manchete);
+
+  const pct = v => (Math.round(v * 1000) / 10).toLocaleString("pt-BR");
+  const regra = c.r > 0
+    ? `O “para sempre” usa só o ganho acima da inflação (${pct(c.r)}% ao ano), para o dinheiro guardado não encolher.`
+    : "Com esse rendimento abaixo da inflação, nada fica pago para sempre: o dinheiro encolhe.";
+  nota.textContent = N === 0 ? regra :
+    `${regra} Valores em dinheiro de hoje (sem descontar a inflação: ${brl(c.futuro)}). ` +
+    `${gastar ? "Saem do bolso" : "Do seu bolso saem"} ${brl(c.doBolso)}; o resto são juros.`;
+
+  for (const it of ITENS){
+    const preco = estado.precos[it.id];
+    const qtd = preco ? c.rendaHoje / preco : 0;
+    const res = it.unidade === "mês" ? tempo(qtd) : viagens(qtd);
+    it.el.querySelector("[data-res]").textContent = (gastar && qtd > 0 ? "− " : "") + res;
+    it.el.querySelector("[data-sub]").textContent = !preco ? "Informe o preço abaixo." :
+      gastar ? `de ${it.nome.toLowerCase()} que você deixa de ter, todo ano`
+             : `de ${it.nome.toLowerCase()} pagos pelo rendimento, todo ano`;
+    it.el.querySelectorAll("[data-meses] i").forEach((b,k) => {
+      b.style.width = Math.max(0, Math.min(1, qtd - k)) * 100 + "%";
+    });
+
+    // meta: quanto precisa ter investido para essa conta ficar paga o ano todo, para sempre
+    const meta = it.el.querySelector("[data-meta]");
+    const custoAno = it.unidade === "mês" ? preco * 12 : preco;
+    if (gastar || !preco || c.r <= 0){ meta.hidden = true; continue; }
+    meta.hidden = false;
+    const alvo = custoAno / c.r;
+    const pct = Math.min(1, c.saldoHoje / alvo);
+    meta.classList.toggle("ok", pct >= 1);
+    meta.querySelector("[data-meta-txt]").textContent = pct >= 1
+      ? "✓ Paga o ano todo, para sempre"
+      : `Para pagar o ano todo, para sempre: ${brl(alvo)} (${Math.floor(pct*100)}%)`;
+    meta.querySelector("[data-meta-barra]").style.width = pct * 100 + "%";
+  }
+}
+
+// reduz a fonte da frase até ela caber numa linha só
+function caber(el){
+  let t = 28;
+  el.style.fontSize = t + "px";
+  while (el.scrollWidth > el.clientWidth && t > 11){ t -= 1; el.style.fontSize = t + "px"; }
+}
+window.addEventListener("resize", () => caber($("manchete")));
+
+atualizar();
+</script>
+</body>
+</html>
