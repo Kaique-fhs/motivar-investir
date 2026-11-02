@@ -221,6 +221,25 @@
   .opcao span{font-size:13px;color:var(--muted)}
   .opcao:hover{border-color:var(--muted)}
   .opcao[aria-pressed="true"]{border-color:var(--cor);background:var(--cor-soft)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:8px 12px;font:inherit;cursor:pointer;
+    display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:84px}
+  .chip b{font-size:16px}
+  .chip span{font-size:11px;color:var(--muted)}
+  .chip:hover{border-color:var(--muted)}
+  .chip[aria-pressed="true"]{border-color:var(--cor);background:var(--cor-soft)}
+  .wiz-marcas{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:-6px}
+  .wiz-contas{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 20px}
+  @media (max-width:520px){ .wiz-contas{grid-template-columns:1fr} }
+  .wiz-contas li{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+  .wiz-contas li:focus-within{border-bottom-color:var(--cor)}
+  .wiz-contas li span{flex:1;color:var(--muted);font-size:15px}
+  .wiz-contas li input{width:110px;font:inherit;font-size:17px;font-weight:600;text-align:right;border:0;background:none;color:var(--ink);
+    padding:9px 0;outline:none;font-variant-numeric:tabular-nums}
+  .wiz-total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--ink);padding-top:10px;margin-top:4px}
+  .wiz-total span{font-size:14px;color:var(--muted)}
+  .wiz-total b{font-size:22px}
+  .wiz-nota{font-size:12px;color:var(--muted);margin:0}
   .wiz-acoes{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
   .btn-pri{border:0;background:var(--cor);color:#fff;font:inherit;font-weight:600;border-radius:999px;padding:10px 24px;cursor:pointer;margin-left:auto}
   .btn-sec{border:0;background:none;color:var(--muted);font:inherit;cursor:pointer;padding:10px 0}
@@ -750,6 +769,17 @@ window.addEventListener("resize", () => caber($("manchete")));
 /* ---------- passo a passo: uma pergunta por vez ---------- */
 let passo = null, passos = [], alcancado = 0;
 
+const HORAS_COMUNS = [[30,"meio período"],[36,"escala 12×36"],[40,"comercial"],[44,"teto da CLT"],[48,"com hora extra"]];
+// escala logarítmica de min a max no slider de 0 a 1000, parando em números redondos
+function escalaLog(min, max){
+  const d = Math.log10(max / min);
+  return { min, max,
+    valor: s => Math.min(max, Math.max(min, redondo(min * 10 ** (d * s / 1000)))),
+    slider: v => Math.round(1000 * Math.log10(Math.min(Math.max(v, min), max) / min) / d) };
+}
+const ESCALA_BRUTO = escalaLog(1000, 100000);
+const ESCALA_GASTO = escalaLog(100, 1000000);
+
 function montarPassos(){
   const dinheiro = (grupo, rotulo, pergunta, ajuda, get, set, obrigatorio) => ({ tipo:"dinheiro", grupo, rotulo, pergunta, ajuda, get, set, obrigatorio });
   passos = [
@@ -764,10 +794,9 @@ function montarPassos(){
     { tipo:"horas", grupo:"Sua renda", rotulo:"Horas por semana", pergunta:"Quantas horas você trabalha por semana?",
       ajuda:"Conte as horas de verdade, com hora extra se for comum.",
       get:() => estado.horas[estado.regime], set:v => { estado.horas[estado.regime] = v; }, obrigatorio:true },
-    ...estado.contas.map(c => dinheiro("Contas básicas", c.nome || "Conta",
-      `Quanto você paga de ${c.nome ? c.nome.toLowerCase() : "conta"} por mês?`,
-      "Contas que você não tem como deixar de pagar. Coloque 0 se não tiver.",
-      () => c.valor, v => { c.valor = v; }, false)),
+    { tipo:"contas", grupo:"Contas básicas", rotulo:"Contas do mês", pergunta:"Quanto você paga de contas por mês?",
+      ajuda:"Confira os valores sugeridos e troque pelos seus. Coloque 0 no que não tiver.",
+      get:() => estado.contas.reduce((s, c) => s + (c.valor || 0), 0) },
     { tipo:"gasto", grupo:"O gasto", rotulo:"Valor do gasto", pergunta:"E quanto você quer gastar?",
       ajuda:"Pode ser qualquer coisa: um tênis, uma viagem, um jantar.",
       get:() => estado.valor, set:v => { estado.valor = v; }, obrigatorio:true }
@@ -807,6 +836,35 @@ function mostrarPasso(){
       box.appendChild(b);
     }
     corpo.appendChild(box);
+  } else if (p.tipo === "contas"){
+    // todas as contas numa lista, com o total atualizando na hora
+    const ul = document.createElement("ul");
+    ul.className = "wiz-contas";
+    const total = document.createElement("div");
+    total.className = "wiz-total";
+    const somar = () => { total.innerHTML = `<span>Total por mês</span><b class="num-tab">${brl(p.get())}</b>`; };
+    estado.contas.forEach(c => {
+      const li = document.createElement("li");
+      const nome = c.nome || "Conta";
+      li.innerHTML = `<span>${escapar(nome)}</span><input inputmode="numeric" autocomplete="off" aria-label="${escapar(nome)} por mês">`;
+      const inp = li.querySelector("input");
+      inp.value = brl(c.valor || 0);
+      inp.addEventListener("focus", () => inp.select());
+      inp.addEventListener("input", () => { c.valor = soNumero(inp.value); inp.value = brl(c.valor); salvar(); somar(); });
+      inp.addEventListener("keydown", e => {
+        if (e.key !== "Enter") return;
+        const prox = li.nextElementSibling;
+        if (prox) prox.querySelector("input").focus(); else avancar();
+      });
+      ul.appendChild(li);
+    });
+    somar();
+    corpo.append(ul, total);
+    const nota = document.createElement("p");
+    nota.className = "wiz-nota";
+    nota.textContent = "Para renomear, tirar ou adicionar contas, use a lista na tela do resultado.";
+    corpo.appendChild(nota);
+    setTimeout(() => { const i = ul.querySelector("input"); if (i) i.focus(); }, 0);
   } else {
     const wrap = document.createElement("div");
     const inp = document.createElement("input");
@@ -817,11 +875,40 @@ function mostrarPasso(){
       wrap.className = "com-sufixo"; wrap.dataset.sufixo = "horas";
     } else {
       inp.inputMode = "numeric"; inp.value = brl(p.get() || 0);
-      inp.addEventListener("input", () => { const n = soNumero(inp.value); inp.value = n ? brl(n) : ""; });
     }
     inp.addEventListener("keydown", e => { if (e.key === "Enter") avancar(); });
     wrap.appendChild(inp);
     corpo.appendChild(wrap);
+
+    if (p.tipo === "horas"){
+      // atalhos de clique; digitar continua valendo
+      const box = document.createElement("div");
+      box.className = "chips"; box.setAttribute("role", "group"); box.setAttribute("aria-label", "Horas mais comuns");
+      const marcar = () => { const v = numDec(inp.value); box.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", Number(b.dataset.h) === v)); };
+      for (const [h, dica] of HORAS_COMUNS){
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "chip"; b.dataset.h = h;
+        b.innerHTML = `<b>${h} h</b><span>${dica}</span>`;
+        b.addEventListener("click", () => { inp.value = String(h); marcar(); $("wizAjuda").classList.remove("erro"); });
+        box.appendChild(b);
+      }
+      inp.addEventListener("input", marcar);
+      marcar();
+      corpo.appendChild(box);
+    } else {
+      // slider ligado ao campo: mexer em um atualiza o outro
+      const esc = p.tipo === "gasto" ? ESCALA_GASTO : ESCALA_BRUTO;
+      const sl = document.createElement("input");
+      sl.type = "range"; sl.min = 0; sl.max = 1000; sl.step = 1;
+      sl.setAttribute("aria-label", "Ajustar valor");
+      sl.value = esc.slider(p.get() || 0);
+      sl.addEventListener("input", () => { inp.value = brl(esc.valor(Number(sl.value))); $("wizAjuda").classList.remove("erro"); });
+      inp.addEventListener("input", () => { const n = soNumero(inp.value); inp.value = n ? brl(n) : ""; sl.value = esc.slider(n); });
+      const marcas = document.createElement("div");
+      marcas.className = "wiz-marcas"; marcas.setAttribute("aria-hidden", "true");
+      marcas.innerHTML = `<span>${brl(esc.min)}</span><span>${brl(esc.max)}</span>`;
+      corpo.append(sl, marcas);
+    }
     if (p.tipo === "gasto"){
       const oq = document.createElement("input");
       oq.className = "oque"; oq.id = "wizOque"; oq.placeholder = "Com o quê? (opcional, ex.: tênis)";
@@ -888,7 +975,7 @@ function montarTrilha(){
 function irPara(i){
   if (i === passo || i > alcancado) return;
   const p = passos[passo];
-  if (p.tipo !== "escolha"){
+  if (p.tipo !== "escolha" && p.tipo !== "contas"){
     const bruto = $("wizInput").value;
     const v = p.tipo === "horas" ? numDec(bruto) : soNumero(bruto);
     if (!p.obrigatorio || v > 0) p.set(v);
@@ -901,7 +988,7 @@ function irPara(i){
 // guarda a resposta do passo atual; devolve false se faltar algo obrigatório
 function lerPasso(){
   const p = passos[passo];
-  if (p.tipo === "escolha") return true;
+  if (p.tipo === "escolha" || p.tipo === "contas") return true;   // contas já são guardadas ao digitar
   const bruto = $("wizInput").value;
   const v = p.tipo === "horas" ? numDec(bruto) : soNumero(bruto);
   if (p.obrigatorio && !(v > 0)){
