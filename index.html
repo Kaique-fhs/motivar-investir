@@ -27,7 +27,6 @@
 
   /* topo */
   .topo{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;margin-bottom:40px}
-  h1{font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
   .abas{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
   .abas button{border:0;background:none;color:var(--muted);font:inherit;font-weight:600;
     padding:8px 22px;border-radius:999px;cursor:pointer}
@@ -84,36 +83,122 @@
   /* modo gastar: custo em horas */
   body.gastar .so-investir{display:none!important}
   body:not(.gastar) .so-gastar{display:none!important}
-  .horas{display:grid;grid-template-columns:1fr 1.1fr;grid-template-rows:auto 1fr;grid-template-areas:"renda gasto" "renda custo";
-    gap:20px;width:100%;max-width:960px;text-align:left;align-items:start}
-  .horas .renda{grid-area:renda;align-self:stretch}
-  .horas .gasto{grid-area:gasto}
-  .horas .custo{grid-area:custo}
-  @media (max-width:760px){ .horas{grid-template-columns:1fr;grid-template-areas:"renda" "gasto" "custo"} }
-  .gasto .campo{width:100%;margin-top:12px}
-  body.gastar #rotulo{display:none}
-  .duas{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px}
-  .duas > div{display:flex;flex-direction:column}
-  .duas > div + div{border-left:1px solid var(--line);padding-left:16px}
-  .duas span{font-size:14px;color:var(--muted)}
+  /* gastar: a frase, os dois lados e a conta completa recolhida */
+  body.gastar .campo{display:none}
+  .horas{display:flex;flex-direction:column;gap:24px;width:100%;max-width:1000px;text-align:left}
+  .escolha{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:32px;display:flex;flex-direction:column;gap:24px}
+  @media (max-width:760px){ .escolha{padding:22px} }
+  .frase{font-size:clamp(22px,3.2vw,32px);line-height:1.55;font-weight:500;margin:0;max-width:34ch;text-wrap:pretty}
+  .escolha .t{font:inherit;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);background:none;border:0;padding:0 2px;
+    border-bottom:3px dotted var(--muted);cursor:ew-resize;touch-action:none;user-select:none;border-radius:3px}
+  .escolha .t.so-janela{cursor:pointer}
+  .escolha .t:hover,.escolha .t:focus-visible{background:var(--track);outline:none;border-bottom-style:solid}
+  .escolha .t.gasto{color:var(--loss);border-bottom-color:var(--loss)}
+  .escolha .t.texto{font-weight:500}
+  .frase .calc{color:var(--muted)}
+  .frase .calc b{color:var(--ink)}
+  .dica{font-size:13px;color:var(--muted);margin:0}
+  .duelo{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  @media (max-width:760px){ .duelo{grid-template-columns:1fr} .duelo .ou{padding:6px;border-block:1px solid var(--line)} }
+  .lado{padding:22px;display:flex;flex-direction:column;gap:10px;min-width:0}
+  .lado.g{background:var(--loss-soft)} .lado.i{background:var(--accent-soft)}
+  .lado h3{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:0;color:var(--ink)}
+  .lado .big{font-size:clamp(40px,6vw,60px);font-weight:800;line-height:.95;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .lado.g .big{color:var(--loss)} .lado.i .big{color:var(--accent)}
+  .lado p{margin:0;font-size:15px}
+  .lado .fino{color:var(--muted);font-size:13px}
+  .ou{display:grid;place-items:center;font-weight:700;color:var(--muted);padding:0 14px;background:var(--surface)}
+  .vazio-escolha{font-size:16px;color:var(--muted);margin:0}
+  /* calendário (domingo a sábado) */
+  .cal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:4px}
+  @media (max-width:420px){ .cal{grid-template-columns:1fr} }
+  .cal h4{margin:0 0 6px;font-size:13px;font-weight:700}
+  .cal .grade{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .cal .grade b{font-size:10px;font-weight:600;color:var(--muted);text-align:center;padding-bottom:2px}
+  .cal .grade span{aspect-ratio:1;border-radius:3px;background:var(--surface);font-size:9px;color:var(--muted);
+    display:grid;place-items:center;font-variant-numeric:tabular-nums}
+  .cal .grade span.vazio{background:none}
+  .cal .grade span.fds{background:none;border:1px dashed var(--line);opacity:.7}
+  .cal .grade span.pago{background:var(--loss);color:var(--surface)}
+  .cal .grade span.parcial{background:linear-gradient(90deg,var(--loss) var(--p),var(--surface) var(--p));color:var(--ink)}
+  .cal .grade span.hoje{outline:2px solid var(--ink);outline-offset:1px}
+  .cal .mais{font-size:13px;color:var(--muted);align-self:center;margin:0}
+  .legenda{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+  .legenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  /* lado investir: a conta pelas três horas */
+  .horas3{width:100%;border-collapse:collapse;font-size:14px}
+  .horas3 td{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
+  .horas3 tr:last-child td{border-bottom:0}
+  .horas3 td span{display:block;font-size:12px;color:var(--muted)}
+  .horas3 td.n{text-align:right;font-size:18px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .horas3 tr.real td{font-weight:700}
+  .horas3 tr.real td.n{color:var(--accent);font-size:22px}
+  /* perfil (menor) e a pergunta (destaque) */
+  .perfil{display:flex;flex-direction:column;gap:6px}
+  .perfil h2{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+  .perfil .frase{font-size:clamp(17px,2vw,21px);line-height:1.7;max-width:62ch}
+  .pergunta{font-size:clamp(26px,4vw,40px);line-height:1.35;font-weight:700;margin:0;padding-top:20px;border-top:1px solid var(--line);
+    text-wrap:balance}
+  .pergunta em{font-style:normal;color:var(--muted)}
+  .lado h3{display:flex;align-items:center;gap:8px}
+  .n-op{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:12px;color:#fff}
+  .lado.g .n-op{background:var(--loss)} .lado.i .n-op{background:var(--accent)}
+  .lado-frase{font-size:17px;line-height:1.7}
+  .lado-frase .t{font-size:inherit}
+  .lado.i .lado-frase .t{border-bottom-color:var(--accent)}
+  /* conta completa, recolhida */
+  .conta-completa > summary{cursor:pointer;font-weight:600;color:var(--muted);padding:6px 0;list-style:none;display:flex;align-items:center;gap:8px}
+  .conta-completa > summary::-webkit-details-marker{display:none}
+  .conta-completa > summary::before{content:"▸";transition:transform .2s ease}
+  .conta-completa[open] > summary::before{transform:rotate(90deg)}
+  .conta-completa > summary:hover{color:var(--ink)}
+  .horas-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:12px;align-items:start}
+  .horas-grid .painel.hora{grid-column:1/-1}
+  @media (max-width:760px){ .horas-grid{grid-template-columns:1fr} }
   .painel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px}
   .painel h2{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
   .num-tab{font-variant-numeric:tabular-nums}
-
-  /* resultado */
-  .custo{position:relative;overflow:hidden}
-  .custo::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--cor)}
-  .custo .quem{font-size:15px;color:var(--muted);margin-top:10px;min-height:1.4em}
-  .duas > div{min-width:0}
-  .custo .grande{font-size:clamp(30px,4.4vw,46px);font-weight:800;color:var(--cor);line-height:1;letter-spacing:-.02em;margin:2px 0 4px;white-space:nowrap}
-  .custo .vazio{font-size:16px;color:var(--muted);padding:28px 0}
-  .semana{margin-top:18px}
-  .semana .dias{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-  .semana .dia{display:flex;flex-direction:column;gap:5px;align-items:center;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  .semana .dia i{display:block;width:100%;height:34px;border-radius:8px;background:var(--track);position:relative;overflow:hidden}
-  .semana .dia i u{position:absolute;inset:0 auto 0 0;background:var(--cor);text-decoration:none}
-  .semana p{margin:10px 0 0;font-size:14px;color:var(--muted)}
-  .semana p b{color:var(--ink)}
+  /* janela de preencher */
+  dialog.janela{border:0;padding:0;border-radius:20px;background:var(--surface);color:var(--ink);width:min(440px,calc(100vw - 32px));
+    box-shadow:0 24px 60px rgba(0,0,0,.35)}
+  dialog.janela:has(.j-contas){width:min(560px,calc(100vw - 32px))}
+  dialog.janela::backdrop{background:rgba(10,14,12,.55)}
+  .j{padding:24px;display:flex;flex-direction:column;gap:14px;text-align:left}
+  .j h3{font-size:22px;line-height:1.2;margin:0}
+  .j .ajuda{margin:-8px 0 0;font-size:14px;color:var(--muted)}
+  .j .ajuda.erro{color:var(--loss)}
+  .j input.grande{font:inherit;font-weight:700;font-size:40px;border:0;border-bottom:3px solid var(--ink);
+    background:none;color:var(--ink);padding:2px 0;outline:none;width:100%;font-variant-numeric:tabular-nums}
+  .j input.grande:focus{border-bottom-color:var(--cor)}
+  .j .marcas{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:-8px}
+  .j .ops{display:flex;flex-wrap:wrap;gap:8px}
+  .j .op{font:inherit;color:var(--ink);background:var(--bg);cursor:pointer;border:2px solid var(--line);border-radius:12px;padding:8px 12px;
+    display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:72px;text-align:left}
+  .j .op b{font-size:15px} .j .op span{font-size:11px;color:var(--muted)}
+  .j .op:hover{border-color:var(--muted)}
+  .j .op[aria-pressed="true"]{border-color:var(--cor);background:var(--cor-soft)}
+  .j .ops.grandes .op{flex:1;padding:14px 16px} .j .ops.grandes .op b{font-size:22px}
+  .j .acoes{display:flex;justify-content:flex-end;gap:10px;margin-top:4px}
+  .j .acoes button{font:inherit;font-weight:700;border-radius:999px;padding:10px 20px;cursor:pointer;border:0}
+  .j .acoes .sec{background:none;color:var(--muted)}
+  .j .acoes .pri{background:var(--cor);color:#fff}
+  .j-contas{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 18px;
+    max-height:min(46vh,360px);overflow-y:auto}
+  @media (max-width:520px){ .j-contas{grid-template-columns:1fr} }
+  .j-contas li{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);min-width:0}
+  .j-contas li:focus-within{border-bottom-color:var(--ink)}
+  .j-contas input{font:inherit;border:0;background:none;color:var(--ink);outline:none;padding:9px 0;min-width:0}
+  .j-contas input.nome{flex:1;color:var(--muted);font-size:15px}
+  .j-contas input.nome:focus{color:var(--ink)}
+  .j-contas input.valor-j{width:96px;text-align:right;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+  .j-contas .tirar{border:0;background:none;color:var(--muted);cursor:pointer;font-size:17px;line-height:1;padding:2px}
+  .j-contas .tirar:hover{color:var(--loss)}
+  .j-add{align-self:flex-start;border:1px dashed var(--line);background:none;color:var(--muted);font:inherit;font-size:14px;border-radius:10px;padding:6px 12px;cursor:pointer}
+  .j-add:hover{color:var(--ink);border-color:var(--muted)}
+  .j-total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--ink);padding-top:10px}
+  .j-total span{font-size:14px;color:var(--muted)}
+  .j-total b{font-size:24px;font-variant-numeric:tabular-nums}
+  @media (prefers-reduced-motion:reduce){ .conta-completa > summary::before{transition:none} }
 
   /* renda */
   .renda-cab{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -131,11 +216,12 @@
   .barra-liq .l{background:var(--accent)}
   .barra-liq .d{background:var(--loss)}
   .barra-liq .c{background:var(--destaque)}
-  .contas{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
-  .contas-cab{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
-  .contas-cab span:first-child::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--destaque);margin-right:8px}
-  .contas-cab span:last-child{color:var(--destaque);font-weight:600}
-  .contas ul{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+  .contas-cab{display:flex;justify-content:space-between;align-items:baseline}
+  .contas-cab h2::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--destaque);margin-right:8px}
+  .contas-cab span{color:var(--destaque);font-weight:600;font-size:15px}
+  .painel.contas .conta{margin-top:14px}
+  .painel.hora .porhora{margin-top:12px}
+  .contas ul{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px}
   @media (max-width:420px){ .contas ul{grid-template-columns:1fr} }
   .contas li{display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--line)}
   .contas li input{min-width:0;font:inherit;font-size:13px;border:0;background:none;color:var(--ink);padding:5px 0;outline:none}
@@ -151,7 +237,6 @@
   .conta tr.sobra td{font-weight:700;color:var(--ink);font-size:16px;border-top:1px solid var(--line);padding-top:10px}
   .conta tr.sobra td:first-child::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--accent);margin-right:8px}
   .conta tr.sobra.neg td:last-child{color:var(--loss)}
-  .custo .compara{font-size:13px;color:var(--muted);margin:12px 0 0}
   .conta{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
   .conta td{padding:5px 0;color:var(--muted)}
   .conta td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
@@ -167,90 +252,13 @@
   .porhora .liq b{color:var(--accent)}
   .porhora small{grid-column:1/-1;font-size:12px;color:var(--muted)}
   .nota-regime{font-size:12px;color:var(--muted);margin:14px 0 0;line-height:1.5}
-  .refazer{margin-top:12px;border:0;background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;padding:0;text-decoration:underline}
-  .refazer:hover{color:var(--ink)}
 
-  /* passo a passo */
-  body:not(.no-assistente) .horas, body.no-assistente .assistente{display:none!important}
-  .assistente{width:min(820px,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;text-align:left;
-    display:grid;grid-template-columns:220px 1fr;gap:28px}
-  .wiz-principal{min-width:0}
-  /* trilha de etapas */
-  .wiz-trilha{border-right:1px solid var(--line);padding-right:20px;display:flex;flex-direction:column;gap:14px}
-  .wiz-grupo h3{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px;
-    display:flex;justify-content:space-between}
-  .wiz-grupo.feito h3{color:var(--cor)}
-  .wiz-grupo ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-  .wiz-item{width:100%;display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--ink);font:inherit;font-size:13px;
-    text-align:left;padding:5px 8px;border-radius:8px;cursor:pointer}
-  .wiz-item:hover:not(:disabled){background:var(--bg)}
-  .wiz-item:disabled{cursor:default;color:var(--muted);opacity:.6}
-  .wiz-item i{flex:none;width:8px;height:8px;border-radius:50%;border:2px solid var(--line)}
-  .wiz-item.feito i{background:var(--cor);border-color:var(--cor)}
-  .wiz-item[aria-current="step"]{background:var(--cor-soft);font-weight:600}
-  .wiz-item[aria-current="step"] i{border-color:var(--cor);background:var(--surface)}
-  .wiz-item .nome{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .wiz-item .resp{flex:none;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
-  @media (max-width:760px){
-    .assistente{grid-template-columns:1fr;gap:20px;padding:22px}
-    .wiz-trilha{border-right:0;border-bottom:1px solid var(--line);padding:0 0 16px;flex-direction:row;flex-wrap:wrap;gap:10px 16px}
-    .wiz-grupo h3{justify-content:flex-start;gap:6px}
-    .wiz-grupo ol{flex-direction:row;flex-wrap:wrap;gap:4px}
-    .wiz-item{width:auto;padding:4px}
-    .wiz-item .nome, .wiz-item .resp{display:none}
-    .wiz-item i{width:12px;height:12px}
-  }
-  .wiz-prog{height:6px;background:var(--track);border-radius:3px;overflow:hidden}
-  .wiz-prog i{display:block;height:100%;width:0;background:var(--cor);transition:width .3s ease}
-  .wiz-passo{animation:entra .25s ease}
-  @keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  @media (prefers-reduced-motion:reduce){ .wiz-passo{animation:none} .wiz-prog i{transition:none} }
-  .wiz-etapa{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:20px}
-  .wiz-pergunta{font-size:clamp(22px,4.5vw,30px);font-weight:700;margin:6px 0 4px;line-height:1.2}
-  .wiz-ajuda{font-size:14px;color:var(--muted);margin:0;min-height:1.4em}
-  .wiz-ajuda.erro{color:var(--loss)}
-  .wiz-corpo{margin-top:20px;display:flex;flex-direction:column;gap:12px}
-  .wiz-corpo .valor{text-align:left;font-size:clamp(34px,7vw,48px)}
-  .wiz-corpo .com-sufixo{position:relative}
-  .wiz-corpo .com-sufixo::after{content:attr(data-sufixo);position:absolute;right:0;bottom:14px;font-size:18px;color:var(--muted)}
-  .opcoes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media (max-width:440px){ .opcoes{grid-template-columns:1fr} }
-  .opcao{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:14px;padding:18px;text-align:left;
-    font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px}
-  .opcao b{font-size:24px}
-  .opcao span{font-size:13px;color:var(--muted)}
-  .opcao:hover{border-color:var(--muted)}
-  .opcao[aria-pressed="true"]{border-color:var(--cor);background:var(--cor-soft)}
-  .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:8px 12px;font:inherit;cursor:pointer;
-    display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:84px}
-  .chip b{font-size:16px}
-  .chip span{font-size:11px;color:var(--muted)}
-  .chip:hover{border-color:var(--muted)}
-  .chip[aria-pressed="true"]{border-color:var(--cor);background:var(--cor-soft)}
-  .wiz-marcas{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:-6px}
-  .wiz-contas{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 20px}
-  @media (max-width:520px){ .wiz-contas{grid-template-columns:1fr} }
-  .wiz-contas li{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
-  .wiz-contas li:focus-within{border-bottom-color:var(--cor)}
-  .wiz-contas li span{flex:1;color:var(--muted);font-size:15px}
-  .wiz-contas li input{width:110px;font:inherit;font-size:17px;font-weight:600;text-align:right;border:0;background:none;color:var(--ink);
-    padding:9px 0;outline:none;font-variant-numeric:tabular-nums}
-  .wiz-total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--ink);padding-top:10px;margin-top:4px}
-  .wiz-total span{font-size:14px;color:var(--muted)}
-  .wiz-total b{font-size:22px}
-  .wiz-nota{font-size:12px;color:var(--muted);margin:0}
-  .wiz-acoes{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
-  .btn-pri{border:0;background:var(--cor);color:#fff;font:inherit;font-weight:600;border-radius:999px;padding:10px 24px;cursor:pointer;margin-left:auto}
-  .btn-sec{border:0;background:none;color:var(--muted);font:inherit;cursor:pointer;padding:10px 0}
-  .btn-sec:hover{color:var(--ink)}
   [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
   <section class="topo">
-    <h1>O que seu dinheiro paga</h1>
     <div class="abas" role="group" aria-label="Modo">
       <button type="button" data-modo="investir" aria-pressed="true">Investir</button>
       <button type="button" data-modo="gastar" aria-pressed="false">Gastar</button>
@@ -265,27 +273,41 @@
     </div>
 
     <div class="horas so-gastar">
-      <section class="painel gasto" id="slotValor">
-        <h2>Quanto você vai gastar?</h2>
-      </section>
-
-      <section class="painel custo" aria-live="polite">
-        <h2>Quanto custa da sua vida</h2>
-        <div id="custoCheio">
-          <div class="quem" id="horasQuem"></div>
-          <div class="duas">
-            <div><div class="grande num-tab" id="horasNum"></div><span id="horasRot">de trabalho</span></div>
-            <div><div class="grande num-tab" id="diasNum"></div><span id="diasRot">dias de trabalho</span></div>
-          </div>
-          <div class="semana" id="semana">
-            <div class="dias" id="semanaDias"></div>
-            <p id="semanaTxt"></p>
-          </div>
-          <p class="compara" id="compara"></p>
+      <section class="escolha" aria-live="polite">
+        <div class="perfil">
+          <h2>Minha renda</h2>
+          <p class="frase" id="frase"></p>
         </div>
-        <div class="vazio" id="custoVazio" hidden></div>
+        <p class="pergunta" id="pergunta"></p>
+        <div class="duelo" id="duelo">
+          <div class="lado g">
+            <h3><span class="n-op">1</span>Se eu gastar</h3>
+            <p class="lado-frase" id="gFrase"></p>
+            <div class="big" id="gHoras"></div>
+            <p id="gTxt"></p>
+            <div class="cal" id="gCal"></div>
+            <div class="legenda">
+              <span><i style="background:var(--loss)"></i>dia de trabalho só para pagar</span>
+              <span><i style="border:1px dashed var(--line)"></i>fim de semana</span>
+            </div>
+          </div>
+          <div class="ou" aria-hidden="true">ou</div>
+          <div class="lado i">
+            <h3><span class="n-op">2</span>Se eu investir</h3>
+            <p class="lado-frase" id="iFrase"></p>
+            <div class="big" id="iFuturo"></div>
+            <p id="iTxt"></p>
+            <table class="horas3" aria-label="O valor futuro em horas de trabalho"><tbody id="iTabela"></tbody></table>
+            <p class="fino" id="iFino"></p>
+          </div>
+        </div>
+        <p class="vazio-escolha" id="escolhaVazio" hidden></p>
+        <p class="dica">Clique num item sublinhado para preencher · arraste os números para os lados para ajustar</p>
       </section>
 
+      <details class="conta-completa">
+        <summary>Ver a conta completa: descontos, contas e o valor da sua hora</summary>
+        <div class="horas-grid">
       <section class="painel renda">
         <div class="renda-cab">
           <h2>Sua renda</h2>
@@ -302,14 +324,17 @@
         </div>
         <div class="barra-liq" id="barraLiq" aria-hidden="true"><i class="l"></i><i class="c"></i><i class="d"></i></div>
         <table class="conta" id="descontos"></table>
+      </section>
 
-        <div class="contas">
-          <div class="contas-cab"><span>Contas básicas por mês</span><span class="num-tab" id="totalContas"></span></div>
-          <ul id="listaContas"></ul>
-          <button type="button" class="add-conta" id="addConta">+ Adicionar conta</button>
-        </div>
+      <section class="painel contas">
+        <div class="contas-cab"><h2>Contas básicas</h2><span class="num-tab" id="totalContas"></span></div>
+        <ul id="listaContas"></ul>
+        <button type="button" class="add-conta" id="addConta">+ Adicionar conta</button>
         <table class="conta"><tr class="sobra"><td>Sobra de verdade por mês</td><td id="sobraMes"></td></tr></table>
+      </section>
 
+      <section class="painel hora">
+        <h2>Quanto vale sua hora</h2>
         <div class="porhora">
           <div><span class="nome">Hora bruta</span><b class="num-tab" id="horaBruta"></b></div>
           <span class="seta" aria-hidden="true">→</span>
@@ -319,26 +344,10 @@
           <small id="ficaHora"></small>
         </div>
         <p class="nota-regime" id="notaRegime"></p>
-        <button type="button" class="refazer" id="refazer">↺ Responder de novo, passo a passo</button>
       </section>
+        </div>
+      </details>
     </div>
-
-    <section class="assistente so-gastar" id="assistente">
-      <nav class="wiz-trilha" id="wizTrilha" aria-label="Etapas do passo a passo"></nav>
-      <div class="wiz-principal" aria-live="polite">
-      <div class="wiz-prog" aria-hidden="true"><i id="wizBarra"></i></div>
-      <div class="wiz-passo" id="wizPasso">
-        <div class="wiz-etapa" id="wizEtapa"></div>
-        <h2 class="wiz-pergunta" id="wizPergunta"></h2>
-        <p class="wiz-ajuda" id="wizAjuda"></p>
-        <div class="wiz-corpo" id="wizCorpo"></div>
-      </div>
-      <div class="wiz-acoes">
-        <button type="button" class="btn-sec" id="wizVoltar">← Voltar</button>
-        <button type="button" class="btn-pri" id="wizContinuar">Continuar →</button>
-      </div>
-      </div>
-    </section>
 
     <div class="controles so-investir">
       <div class="ctl">
@@ -371,9 +380,21 @@
   <p class="rodape so-investir">Os preços dos cartões são médias de hoje e podem ser editados. O que você muda fica salvo neste navegador.</p>
 </main>
 
+<dialog class="janela" id="janela" aria-labelledby="jTitulo">
+  <form class="j" id="jForm" method="dialog">
+    <h3 id="jTitulo"></h3>
+    <p class="ajuda" id="jAjuda"></p>
+    <div id="jCorpo" style="display:flex;flex-direction:column;gap:14px"></div>
+    <div class="acoes">
+      <button type="button" class="sec" id="jCancelar">Cancelar</button>
+      <button type="submit" class="pri" id="jOk">Aplicar</button>
+    </div>
+  </form>
+</dialog>
+
 <script>
 const PADRAO = {
-  valor: 5000, aporte: 0, anos: 0, taxa: 10, modo: "investir", oque: "",
+  valor: 5000, aporte: 0, anos: 0, taxa: 10, prazo: 10, modo: "investir", oque: "",
   regime: "clt", bruto: 5000, horas: { clt: 44, pj: 40 },
   contas: [ { nome:"Aluguel", valor:1500 }, { nome:"Água", valor:80 }, { nome:"Luz", valor:180 },
             { nome:"Internet", valor:100 }, { nome:"Celular", valor:60 }, { nome:"Mercado", valor:800 },
@@ -542,8 +563,7 @@ document.querySelectorAll("[data-regime]").forEach(b => b.addEventListener("clic
   estado.regime = b.dataset.regime; mostrarHoras(); salvar(); atualizar();
 }));
 document.querySelectorAll("[data-modo]").forEach(b => b.addEventListener("click", () => {
-  estado.modo = b.dataset.modo; salvar();
-  if (estado.modo === "gastar" && !estado.perfilPronto) abrirAssistente(); else atualizar();
+  estado.modo = b.dataset.modo; salvar(); atualizar();
 }));
 
 /* ---------- desenha ---------- */
@@ -553,7 +573,6 @@ function atualizar(){
   const gastar = estado.modo === "gastar";
   const N = estado.anos;
   document.body.classList.toggle("gastar", gastar);
-  document.body.classList.toggle("no-assistente", passo === null);
   document.querySelectorAll("[data-modo]").forEach(b => b.setAttribute("aria-pressed", b.dataset.modo === estado.modo));
   $("rotulo").textContent = gastar ? "Quanto você vai gastar?" : "Quanto você vai investir?";
   $("rotuloAporte").textContent = gastar ? "Gasto que se repete todo mês" : "Guardar todo mês";
@@ -561,11 +580,7 @@ function atualizar(){
   $("anosNum").textContent = N === 0 ? "hoje" : N + " " + plural(N,"ano","anos");
   $oque.hidden = !gastar;
 
-  // o campo do valor vai para o cartão "Quanto você vai gastar?" no modo gastar
-  const campo = document.querySelector(".campo");
-  if (gastar && campo.parentElement.id !== "slotValor") $("slotValor").appendChild(campo);
-  if (!gastar && campo.parentElement.id === "slotValor") document.querySelector(".topo").insertBefore(campo, document.querySelector(".horas"));
-  if (gastar){ desenharHoras(); return; }
+  if (gastar){ desenharEscolha(); return; }
 
   const c = calcular();
   const manchete = $("manchete"), nota = $("nota");
@@ -708,54 +723,309 @@ function desenharConta(){
   $("ficaHora").textContent = sobra > 0
     ? `De cada hora trabalhada, sobram livres ${Math.round(sobra / bruto * 100)}%, depois dos impostos e das contas.`
     : "As contas básicas consomem todo o líquido: não sobra nada por hora.";
-  return { horaLiquida: r.liquido / horasMes, horaReal: sobra / horasMes, hs };
+  return { horaBruta: bruto / horasMes, horaLiquida: r.liquido / horasMes, horaReal: sobra / horasMes, hs };
 }
 
-function desenharHoras(){
-  const coisa = estado.oque.trim();
-  const quem = coisa ? "“" + escapar(coisa) + "”" : "Esse gasto";
-  const conta = desenharConta();
-  const vazio = msg => { $("custoCheio").hidden = true; $("custoVazio").hidden = false; $("custoVazio").textContent = msg; };
-  if (!conta || conta.horaLiquida <= 0) return vazio("Preencha sua renda e suas horas por semana para ver o custo em horas.");
-  if (conta.horaReal <= 0) return vazio("Suas contas básicas consomem todo o salário líquido: não sobra nenhuma hora livre para pagar esse gasto.");
-  if (!estado.valor) return vazio("Digite um valor acima.");
-  $("custoCheio").hidden = false; $("custoVazio").hidden = true;
+/* ---------- gastar: a frase viva que termina numa escolha ---------- */
+const horasTxt = h => h < 1 ? Math.max(1, Math.round(h * 60)) + " min" : num1(h) + " h";
+const hoje = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const totalContas = () => estado.contas.reduce((s, c) => s + (c.valor || 0), 0);
 
-  // o custo usa a hora real: o que sobra por hora depois dos impostos e das contas básicas
+// itens da frase: os números podem ser arrastados; os outros só abrem a janela
+const TOK = {
+  bruto: { get:() => estado.bruto, set:v => { estado.bruto = v; }, fmt:v => brl(v),
+           passo:v => v < 3000 ? 50 : v < 10000 ? 100 : 500, min:1000, max:100000 },
+  horas: { get:() => estado.horas[estado.regime], set:v => { estado.horas[estado.regime] = v; }, fmt:v => num1(v) + " h",
+           passo:() => 1, min:1, max:100 },
+  valor: { get:() => estado.valor, set:v => { estado.valor = v; }, fmt:v => brl(v),
+           passo:v => v < 1000 ? 10 : v < 10000 ? 50 : v < 100000 ? 500 : 5000, min:10, max:1000000 },
+  taxa:  { get:() => estado.taxa, set:v => { estado.taxa = Math.round(v * 10) / 10; }, fmt:v => String(v).replace(".", ",") + "%",
+           passo:() => 0.5, min:0.5, max:30 },
+  prazo: { get:() => estado.prazo || 10, set:v => { estado.prazo = Math.round(v); }, fmt:v => v + " " + plural(v, "ano", "anos"),
+           passo:() => 1, min:1, max:50 }
+};
+const ROTULO = { bruto:"salário", horas:"horas por semana", contas:"contas básicas", valor:"valor", regime:"modalidade",
+  oque:"o que vai comprar", taxa:"rendimento ao ano", prazo:"tempo investido" };
+function textoItem(chave){
+  if (chave === "regime") return estado.regime === "pj" ? "PJ" : "CLT";
+  if (chave === "contas") return brl(totalContas());
+  if (chave === "oque") return escapar(estado.oque.trim() || "uma compra");
+  return TOK[chave].fmt(TOK[chave].get());
+}
+function item(chave, extra){
+  const txt = textoItem(chave);
+  const cls = "t" + (TOK[chave] ? "" : " so-janela") + (extra ? " " + extra : "");
+  return `<button type="button" class="${cls}" data-k="${chave}" aria-haspopup="dialog" aria-label="${ROTULO[chave]}: ${txt}. Clique para preencher">${txt}</button>`;
+}
+
+function desenharEscolha(){
+  // 1) o perfil, em tamanho de leitura; 2) a pergunta, em destaque; 3) cada lado com a sua própria frase
+  $("frase").innerHTML =
+    `Como ${item("regime")}, eu ganho ${item("bruto")} por mês, sendo <span class="calc"><b id="fLiq"></b> líquidos</span>. ` +
+    `Trabalho ${item("horas")} por semana e pago ${item("contas")} de contas básicas. ` +
+    `<span class="calc">Sobram <b id="fSobra"></b> por mês, <b id="fHora"></b> por hora de trabalho.</span>`;
+  $("pergunta").innerHTML = `Tenho ${item("valor", "gasto")} para ${item("oque", "texto")}. <em>Gasto ou invisto?</em>`;
+  $("gFrase").innerHTML = `Gastando os <b class="gValor"></b>, eu trabalho`;
+  $("iFrase").innerHTML = `Investindo os <b class="gValor"></b> a ${item("taxa")} ao ano, por ${item("prazo")}, eu terei`;
+  ligarFrase();
+  desenharLados();
+}
+
+// os dois lados: o que custa gastar e o que fica guardado investindo
+function desenharLados(){
+  const conta = desenharConta();                       // também atualiza a conta completa
+  const liq = estado.bruto ? liquido(estado.regime, estado.bruto).liquido : 0;
+  $("fLiq").textContent = brl2(liq);
+  const sobra = liq - totalContas();
+  $("fSobra").textContent = brl2(Math.max(0, sobra));
+  $("fHora").textContent = conta && conta.horaReal > 0 ? brl2(conta.horaReal) : "R$ 0";
+  document.querySelectorAll(".gValor").forEach(e => { e.textContent = brl(estado.valor); });
+  const vazio = msg => { $("duelo").hidden = true; $("escolhaVazio").hidden = false; $("escolhaVazio").textContent = msg; };
+  if (!conta || conta.horaLiquida <= 0) return vazio("Preencha o salário e as horas por semana para ver a conta.");
+  if (conta.horaReal <= 0) return vazio("As contas básicas consomem todo o salário líquido: não sobra nenhuma hora livre para pagar esse gasto.");
+  if (!estado.valor) return vazio("Informe um valor na frase.");
+  $("duelo").hidden = false; $("escolhaVazio").hidden = true;
+
+  // gastar: horas pela hora real (depois das contas) e o calendário de hoje até o último dia
   const k = custoEmHoras(estado.valor, conta.horaReal, conta.hs);
-  const hLiq = estado.valor / conta.horaLiquida;
-  $("compara").textContent = `Pela hora líquida, sem contar as contas básicas, seriam ${num1(hLiq)} ${num1(hLiq) === "1" ? "hora" : "horas"}.`;
-  $("horasQuem").innerHTML = `${quem} custa`;
-  if (k.horas < 1){
-    const m = Math.max(1, Math.round(k.horas * 60));
-    $("horasNum").textContent = m + " " + plural(m, "minuto", "minutos");
+  const fim = calendario($("gCal"), k.dias, 4);
+  const h = hoje();
+  const data = fim.toLocaleDateString("pt-BR", { weekday:"long", day:"numeric", month:"long", year: fim.getFullYear() !== h.getFullYear() ? "numeric" : undefined });
+  const contas = totalContas();
+  $("gHoras").textContent = horasTxt(k.horas);
+  $("gTxt").innerHTML = `para pagar, pela minha hora real de ${brl2(conta.horaReal)}. São <b>${num1(k.dias)} ${k.dias < 2 ? "dia útil" : "dias úteis"}</b> de ${num1(conta.hs / 5)} h: ` +
+    (k.dias <= 1 && fim.getTime() === h.getTime() ? "o dia de hoje" : `eu trabalharia até <b>${data}</b>`) + " só para pagar isso." +
+    (contas ? ` É <b>${Math.round(estado.valor / contas * 100).toLocaleString("pt-BR")}%</b> das minhas contas básicas de um mês.` : "");
+
+  // investir: juros compostos pelo prazo; o valor futuro medido nas três horas de hoje
+  const taxa = estado.taxa, prazo = estado.prazo || 10;
+  const futuro = estado.valor * (1 + taxa / 100) ** prazo;
+  const ganho = futuro - estado.valor;
+  $("iFuturo").textContent = brl(futuro);
+  $("iTxt").innerHTML = `que são <b>${horasTxt(futuro / conta.horaReal)}</b> de trabalho pela minha hora real. ` +
+    `Só o rendimento, ${brl(ganho)}, vale ${horasTxt(ganho / conta.horaReal)}.`;
+  const linha = (nome, hora, real) =>
+    `<tr${real ? ' class="real"' : ""}><td>${nome}<span>${brl2(hora)} por hora</span></td><td class="n">${horasTxt(futuro / hora)}</td></tr>`;
+  $("iTabela").innerHTML = linha("Pela hora bruta", conta.horaBruta) + linha("Pela hora líquida", conta.horaLiquida) +
+    linha("Pela hora real, depois das contas", conta.horaReal, true);
+  $("iFino").textContent = `Gastando, os ${brl(estado.valor)} custam ${horasTxt(k.horas)} hoje. Investidos por ${prazo} ${plural(prazo, "ano", "anos")}, viram ${horasTxt(futuro / conta.horaReal)}. As horas usam o valor da sua hora de hoje; o rendimento é antes do imposto.`;
+}
+
+// calendário de hoje até o último dia útil necessário (segunda a sexta, sem feriados), semana começando no domingo
+function calendario(el, dias, mesesMax){
+  el.innerHTML = "";
+  const h = hoje();
+  let falta = dias, d = new Date(h), ultimo = null, guarda = 0;
+  const pintura = new Map();
+  while (falta > 1e-9 && guarda < 40000){
+    const s = d.getDay();
+    if (s !== 0 && s !== 6){ const p = Math.min(1, falta); pintura.set(d.toDateString(), p); falta -= p; ultimo = new Date(d); }
+    d.setDate(d.getDate() + 1); guarda++;
+  }
+  ultimo = ultimo || new Date(h);
+  const mesFim = (ultimo.getFullYear() - h.getFullYear()) * 12 + ultimo.getMonth() - h.getMonth();
+  const n = Math.min(mesesMax, mesFim + 1);
+  for (let m = 0; m < n; m++){
+    const ini = new Date(h.getFullYear(), h.getMonth() + m, 1);
+    const nome = ini.toLocaleDateString("pt-BR", { month:"long", year:"numeric" });
+    const box = document.createElement("div");
+    box.innerHTML = `<h4>${nome.charAt(0).toUpperCase() + nome.slice(1)}</h4>`;
+    const g = document.createElement("div"); g.className = "grade";
+    g.innerHTML = ["D","S","T","Q","Q","S","S"].map(x => `<b aria-hidden="true">${x}</b>`).join("");
+    for (let i = 0; i < ini.getDay(); i++) g.insertAdjacentHTML("beforeend", '<span class="vazio"></span>');
+    const nDias = new Date(ini.getFullYear(), ini.getMonth() + 1, 0).getDate();
+    for (let dia = 1; dia <= nDias; dia++){
+      const dt = new Date(ini.getFullYear(), ini.getMonth(), dia);
+      const s = document.createElement("span"); s.textContent = dia;
+      if (dt.getDay() === 0 || dt.getDay() === 6) s.className = "fds";
+      const p = pintura.get(dt.toDateString());
+      if (p === 1) s.classList.add("pago");
+      else if (p){ s.classList.add("parcial"); s.style.setProperty("--p", Math.round(p * 100) + "%"); }
+      if (dt.getTime() === h.getTime()) s.classList.add("hoje");
+      g.appendChild(s);
+    }
+    box.appendChild(g); el.appendChild(box);
+  }
+  if (mesFim + 1 > mesesMax){
+    const resto = mesFim + 1 - mesesMax;
+    el.insertAdjacentHTML("beforeend", `<p class="mais">… e mais ${resto} ${plural(resto, "mês", "meses")}, até ${ultimo.toLocaleDateString("pt-BR", { month:"long", year:"numeric" })}.</p>`);
+  }
+  return ultimo;
+}
+
+// leva o estado para os campos da conta completa e do modo investir
+function sincronizarCampos(){
+  $bruto.value = brl(estado.bruto); mostrarHoras(); montarContas();
+  $valor.value = brl(estado.valor); $valorS.value = sliderDoValor(estado.valor); $oque.value = estado.oque;
+  $taxa.value = String(estado.taxa).replace(".", ",");
+}
+
+// itens da frase: clique abre a janela; arrastar para os lados e as setas ajustam sem abrir
+function ligarFrase(){
+  const focar = chave => { const b = document.querySelector(`.escolha [data-k="${chave}"]`); if (b) b.focus(); };
+  for (const b of document.querySelectorAll(".escolha .t")){
+    const chave = b.dataset.k, t = TOK[chave];
+    const abrir = () => abrirJanela(chave, () => { salvar(); sincronizarCampos(); atualizar(); focar(chave); }, () => focar(chave));
+    if (!t){ b.addEventListener("click", abrir); continue; }
+    const mudar = v => { t.set(Math.min(t.max, Math.max(t.min, v))); b.textContent = t.fmt(t.get()); salvar(); sincronizarCampos(); desenharLados(); };
+    let x0 = null, v0 = 0, moveu = false;
+    b.addEventListener("pointerdown", e => { x0 = e.clientX; v0 = t.get(); moveu = false; b.setPointerCapture(e.pointerId); });
+    b.addEventListener("pointermove", e => {
+      if (x0 === null) return;
+      const dx = e.clientX - x0;
+      if (Math.abs(dx) > 4) moveu = true;
+      if (!moveu) return;
+      const passos = Math.round(dx / 4), s = Math.sign(passos);
+      let v = v0;
+      for (let i = 0; i < Math.abs(passos); i++) v += s * t.passo(v);
+      mudar(v);
+    });
+    b.addEventListener("pointerup", () => { if (x0 !== null && !moveu) abrir(); x0 = null; });
+    b.addEventListener("pointercancel", () => { x0 = null; });
+    b.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp" || e.key === "ArrowRight"){ e.preventDefault(); mudar(t.get() + t.passo(t.get())); }
+      if (e.key === "ArrowDown" || e.key === "ArrowLeft"){ e.preventDefault(); mudar(t.get() - t.passo(t.get())); }
+      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); abrir(); }
+    });
+  }
+}
+
+/* ---------- janela de preencher ---------- */
+const HORAS_COMUNS = [[30,"meio período"],[36,"escala 12×36"],[40,"comercial"],[44,"teto da CLT"],[48,"com hora extra"]];
+const SUGESTOES = ["um tênis", "uma viagem", "um celular novo", "um jantar fora", "um videogame"];
+function escalaLog(min, max){
+  const d = Math.log10(max / min);
+  return { min, max, valor:s => Math.min(max, Math.max(min, redondo(min * 10 ** (d * s / 1000)))),
+           slider:v => Math.round(1000 * Math.log10(Math.min(Math.max(v, min), max) / min) / d) };
+}
+const JANELAS = {
+  regime: { titulo:"Qual é a sua modalidade de trabalho?", ajuda:"Muda os descontos que saem do bruto." },
+  bruto:  { titulo:() => estado.regime === "pj" ? "Quanto você fatura por mês?" : "Qual é o seu salário bruto por mês?",
+            ajuda:() => estado.regime === "pj" ? "O valor das notas, antes dos impostos." : "O valor do contrato, antes dos descontos.",
+            escala:escalaLog(1000, 100000) },
+  horas:  { titulo:"Quantas horas você trabalha por semana?", ajuda:"Conte as horas de verdade, com hora extra se for comum.", atalhos:HORAS_COMUNS },
+  taxa:   { titulo:"Quanto o investimento rende por ano?", ajuda:"A taxa que você espera, ao ano. Vale também para o modo Investir.",
+            atalhos:[[6,"conservador"],[8,""],[10,"padrão do site"],[12,""],[14,"otimista"]] },
+  prazo:  { titulo:"Por quanto tempo você deixaria investido?", ajuda:"Os rendimentos ficam aplicados e rendem juntos.",
+            atalhos:[[1,""],[5,""],[10,""],[20,""],[30,"aposentadoria"]] },
+  contas: { titulo:"Quanto você paga de contas básicas por mês?", ajuda:"Troque os valores sugeridos pelos seus. Coloque 0 no que não tiver, ou tire a conta da lista." },
+  valor:  { titulo:"Quanto dinheiro está em jogo?", ajuda:"O valor que você pensa em gastar ou investir.", escala:escalaLog(100, 1000000) },
+  oque:   { titulo:"O que você pensa em comprar?", ajuda:"Só para a frase ficar com a sua cara. Pode deixar em branco." }
+};
+const $janela = $("janela");
+function abrirJanela(chave, aplicado, cancelado){
+  const c = JANELAS[chave], txt = v => typeof v === "function" ? v() : v;
+  $("jTitulo").textContent = txt(c.titulo);
+  $("jAjuda").textContent = txt(c.ajuda);
+  $("jAjuda").classList.remove("erro");
+  const corpo = $("jCorpo");
+  corpo.innerHTML = "";
+  $("jOk").hidden = chave === "regime";
+  let ler = () => true, foco = null, aberta = true;
+  const fechar = ok => {
+    if (!aberta || (ok && !ler())) return;
+    aberta = false; $janela.close();
+    if (ok) aplicado(); else cancelado();
+  };
+  const erro = (msg, el) => { $("jAjuda").textContent = msg; $("jAjuda").classList.add("erro"); el.focus(); return false; };
+  const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
+
+  if (chave === "regime"){
+    const ops = el("div", "ops grandes");
+    for (const [v, nome, desc] of [["clt","CLT","Carteira assinada"],["pj","PJ","Empresa no Simples Nacional"]]){
+      const b = el("button", "op", `<b>${nome}</b><span>${desc}</span>`); b.type = "button";
+      b.setAttribute("aria-pressed", estado.regime === v);
+      b.addEventListener("click", () => { estado.regime = v; fechar(true); });
+      ops.appendChild(b); if (estado.regime === v) foco = b;
+    }
+    corpo.appendChild(ops);
+  } else if (chave === "contas"){
+    // rascunho da lista: só vale ao clicar em Aplicar
+    const rasc = estado.contas.map(x => ({ ...x }));
+    const ul = el("ul", "j-contas"), total = el("div", "j-total");
+    const somar = () => { total.innerHTML = `<span>Total por mês</span><b>${brl(rasc.reduce((s, x) => s + (x.valor || 0), 0))}</b>`; };
+    const desenhar = () => {
+      ul.innerHTML = "";
+      rasc.forEach((x, i) => {
+        const li = el("li", "", `<input class="nome" aria-label="Nome da conta" placeholder="Nova conta">` +
+          `<input class="valor-j" inputmode="numeric" autocomplete="off" aria-label="Valor por mês">` +
+          `<button type="button" class="tirar" aria-label="Tirar esta conta">×</button>`);
+        const [nome, valor] = li.querySelectorAll("input");
+        nome.value = x.nome; valor.value = brl(x.valor || 0);
+        nome.addEventListener("input", () => { x.nome = nome.value; });
+        valor.addEventListener("focus", () => valor.select());
+        valor.addEventListener("input", () => { x.valor = soNumero(valor.value); valor.value = brl(x.valor); somar(); });
+        valor.addEventListener("keydown", e => {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          const prox = li.nextElementSibling;
+          if (prox) prox.querySelector(".valor-j").focus(); else fechar(true);
+        });
+        li.querySelector(".tirar").addEventListener("click", () => { rasc.splice(i, 1); desenhar(); somar(); });
+        ul.appendChild(li);
+      });
+    };
+    const add = el("button", "j-add", "+ Adicionar conta"); add.type = "button";
+    add.addEventListener("click", () => { rasc.push({ nome:"", valor:0 }); desenhar(); somar(); ul.lastElementChild.querySelector(".nome").focus(); });
+    desenhar(); somar();
+    corpo.append(ul, add, total);
+    ler = () => { estado.contas = rasc.filter(x => x.nome.trim() || x.valor); return true; };
+    foco = ul.querySelector(".valor-j") || add;
+  } else if (chave === "oque"){
+    const inp = el("input", "grande"); inp.style.fontSize = "28px";
+    inp.value = estado.oque; inp.placeholder = "ex.: um tênis"; inp.setAttribute("aria-label", "O que você pensa em comprar");
+    const ops = el("div", "ops");
+    for (const s of SUGESTOES){
+      const b = el("button", "op", `<b>${s}</b>`); b.type = "button";
+      b.addEventListener("click", () => { inp.value = s; inp.focus(); });
+      ops.appendChild(b);
+    }
+    corpo.append(inp, ops);
+    ler = () => { estado.oque = inp.value.trim(); return true; };
+    foco = inp;
   } else {
-    const h = num1(k.horas);
-    $("horasNum").textContent = h + " " + (h === "1" ? "hora" : "horas");
+    const t = TOK[chave];
+    const inp = el("input", "grande"); inp.autocomplete = "off"; inp.setAttribute("aria-labelledby", "jTitulo");
+    corpo.appendChild(inp);
+    const atalhos = c.atalhos;                       // horas, taxa e prazo: número com atalhos de clique
+    const num = () => atalhos ? numDec(inp.value) : soNumero(inp.value);
+    if (atalhos){
+      inp.inputMode = "decimal"; inp.value = String(t.get()).replace(".", ",");
+      const ops = el("div", "ops");
+      const marcar = () => ops.querySelectorAll(".op").forEach(b => b.setAttribute("aria-pressed", Number(b.dataset.h) === num()));
+      for (const [hh, dica] of atalhos){
+        const b = el("button", "op", `<b>${t.fmt(hh)}</b><span>${dica}</span>`); b.type = "button"; b.dataset.h = hh;
+        b.addEventListener("click", () => { inp.value = String(hh).replace(".", ","); marcar(); });
+        ops.appendChild(b);
+      }
+      inp.addEventListener("input", marcar); marcar();
+      corpo.appendChild(ops);
+    } else {
+      inp.inputMode = "numeric"; inp.value = brl(t.get());
+      const esc = c.escala;
+      const sl = el("input"); sl.type = "range"; sl.min = 0; sl.max = 1000; sl.step = 1;
+      sl.setAttribute("aria-label", "Ajustar valor"); sl.value = esc.slider(t.get());
+      sl.addEventListener("input", () => { inp.value = brl(esc.valor(Number(sl.value))); });
+      inp.addEventListener("input", () => { const n = soNumero(inp.value); inp.value = n ? brl(n) : ""; sl.value = esc.slider(n); });
+      const marcas = el("div", "marcas", `<span>${brl(esc.min)}</span><span>${brl(esc.max)}</span>`);
+      marcas.setAttribute("aria-hidden", "true");
+      corpo.append(sl, marcas);
+    }
+    ler = () => {
+      const v = num();
+      if (!(v > 0)) return erro(chave === "horas" ? "Informe as horas, maior que zero." : "Informe um número maior que zero.", inp);
+      t.set(Math.min(t.max, v));
+      return true;
+    };
+    foco = inp;
   }
 
-  const pct = x => Math.max(1, Math.round(x * 100)) + "%";
-  const d = k.dias < 0.1 ? "0,1" : num1(k.dias);
-  $("diasNum").textContent = (k.dias < 0.1 ? "< " : "") + d + " " + (k.dias < 2 ? "dia" : "dias");
-  $("diasRot").textContent = `de trabalho, de ${num1(conta.hs / 5)} h cada`;
-  // números longos (ex.: 42.385 horas) encolhem até caber no cartão
-  for (const el of document.querySelectorAll(".custo .grande")){
-    el.style.fontSize = "";
-    let t = parseFloat(getComputedStyle(el).fontSize);
-    while (el.scrollWidth > el.parentElement.clientWidth && t > 18){ t -= 2; el.style.fontSize = t + "px"; }
-  }
-
-  // semana: até 5 dias, pinta de segunda a sexta
-  const $sem = $("semana");
-  $sem.hidden = k.dias > 5;
-  if (k.dias <= 5){
-    $("semanaDias").innerHTML = ["Seg","Ter","Qua","Qui","Sex"].map((d, i) =>
-      `<div class="dia"><i><u style="width:${Math.max(0, Math.min(1, k.dias - i)) * 100}%"></u></i>${d}</div>`).join("");
-    const fim = Math.min(5, Math.ceil(k.dias - 1e-9));
-    $("semanaTxt").innerHTML = k.dias < 1 ? `<b>${pct(k.dias)} da segunda-feira</b>, só para pagar isso.`
-      : fim === 1 ? "A <b>segunda-feira inteira</b>, só para pagar isso."
-      : `De <b>segunda até ${DIAS[fim-1]}</b>, só para pagar isso.`;
-  }
+  $("jForm").onsubmit = e => { e.preventDefault(); fechar(true); };
+  $("jCancelar").onclick = () => fechar(false);
+  $janela.oncancel = e => { e.preventDefault(); fechar(false); };
+  $janela.onclick = e => { if (e.target === $janela) fechar(false); };   // clique fora fecha
+  $janela.showModal();
+  if (foco){ foco.focus(); if (foco.select) foco.select(); }
 }
 
 // reduz a fonte da frase até ela caber numa linha só
@@ -766,270 +1036,7 @@ function caber(el){
 }
 window.addEventListener("resize", () => caber($("manchete")));
 
-/* ---------- passo a passo: uma pergunta por vez ---------- */
-let passo = null, passos = [], alcancado = 0;
-
-const HORAS_COMUNS = [[30,"meio período"],[36,"escala 12×36"],[40,"comercial"],[44,"teto da CLT"],[48,"com hora extra"]];
-// escala logarítmica de min a max no slider de 0 a 1000, parando em números redondos
-function escalaLog(min, max){
-  const d = Math.log10(max / min);
-  return { min, max,
-    valor: s => Math.min(max, Math.max(min, redondo(min * 10 ** (d * s / 1000)))),
-    slider: v => Math.round(1000 * Math.log10(Math.min(Math.max(v, min), max) / min) / d) };
-}
-const ESCALA_BRUTO = escalaLog(1000, 100000);
-const ESCALA_GASTO = escalaLog(100, 1000000);
-
-function montarPassos(){
-  const dinheiro = (grupo, rotulo, pergunta, ajuda, get, set, obrigatorio) => ({ tipo:"dinheiro", grupo, rotulo, pergunta, ajuda, get, set, obrigatorio });
-  passos = [
-    { tipo:"escolha", grupo:"Sua renda", rotulo:"Modalidade", pergunta:"Qual é a sua modalidade de trabalho?",
-      ajuda:"Isso muda os descontos que saem do seu bruto.",
-      opcoes:[["clt","CLT","Carteira assinada"],["pj","PJ","Empresa no Simples Nacional"]],
-      get:() => estado.regime, set:v => { estado.regime = v; } },
-    dinheiro("Sua renda", () => estado.regime === "pj" ? "Faturamento" : "Salário bruto",
-      () => estado.regime === "pj" ? "Quanto você fatura por mês?" : "Qual é o seu salário bruto por mês?",
-      () => estado.regime === "pj" ? "O valor das notas, antes dos impostos." : "O valor do contrato, antes dos descontos.",
-      () => estado.bruto, v => { estado.bruto = v; }, true),
-    { tipo:"horas", grupo:"Sua renda", rotulo:"Horas por semana", pergunta:"Quantas horas você trabalha por semana?",
-      ajuda:"Conte as horas de verdade, com hora extra se for comum.",
-      get:() => estado.horas[estado.regime], set:v => { estado.horas[estado.regime] = v; }, obrigatorio:true },
-    { tipo:"contas", grupo:"Contas básicas", rotulo:"Contas do mês", pergunta:"Quanto você paga de contas por mês?",
-      ajuda:"Confira os valores sugeridos e troque pelos seus. Coloque 0 no que não tiver.",
-      get:() => estado.contas.reduce((s, c) => s + (c.valor || 0), 0) },
-    { tipo:"gasto", grupo:"O gasto", rotulo:"Valor do gasto", pergunta:"E quanto você quer gastar?",
-      ajuda:"Pode ser qualquer coisa: um tênis, uma viagem, um jantar.",
-      get:() => estado.valor, set:v => { estado.valor = v; }, obrigatorio:true }
-  ];
-}
-
-function abrirAssistente(){
-  estado.modo = "gastar";
-  montarPassos(); passo = 0;
-  // refazendo: todas as etapas já foram respondidas, dá para pular para qualquer uma
-  alcancado = estado.perfilPronto ? passos.length - 1 : 0;
-  atualizar(); mostrarPasso();
-}
-
-function mostrarPasso(){
-  const p = passos[passo];
-  const txt = v => typeof v === "function" ? v() : v;
-  $("wizBarra").style.width = (passo / passos.length) * 100 + "%";
-  $("wizEtapa").textContent = `${p.grupo} · ${passo + 1} de ${passos.length}`;
-  alcancado = Math.max(alcancado, passo);
-  montarTrilha();
-  $("wizPergunta").textContent = txt(p.pergunta);
-  $("wizAjuda").textContent = txt(p.ajuda);
-  $("wizAjuda").classList.remove("erro");
-  const corpo = $("wizCorpo");
-  corpo.innerHTML = "";
-
-  if (p.tipo === "escolha"){
-    const box = document.createElement("div");
-    box.className = "opcoes";
-    for (const [v, titulo, desc] of p.opcoes){
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "opcao";
-      b.setAttribute("aria-pressed", p.get() === v);
-      b.innerHTML = `<b>${titulo}</b><span>${desc}</span>`;
-      b.addEventListener("click", () => { p.set(v); salvar(); avancar(true); });
-      box.appendChild(b);
-    }
-    corpo.appendChild(box);
-  } else if (p.tipo === "contas"){
-    // todas as contas numa lista, com o total atualizando na hora
-    const ul = document.createElement("ul");
-    ul.className = "wiz-contas";
-    const total = document.createElement("div");
-    total.className = "wiz-total";
-    const somar = () => { total.innerHTML = `<span>Total por mês</span><b class="num-tab">${brl(p.get())}</b>`; };
-    estado.contas.forEach(c => {
-      const li = document.createElement("li");
-      const nome = c.nome || "Conta";
-      li.innerHTML = `<span>${escapar(nome)}</span><input inputmode="numeric" autocomplete="off" aria-label="${escapar(nome)} por mês">`;
-      const inp = li.querySelector("input");
-      inp.value = brl(c.valor || 0);
-      inp.addEventListener("focus", () => inp.select());
-      inp.addEventListener("input", () => { c.valor = soNumero(inp.value); inp.value = brl(c.valor); salvar(); somar(); });
-      inp.addEventListener("keydown", e => {
-        if (e.key !== "Enter") return;
-        const prox = li.nextElementSibling;
-        if (prox) prox.querySelector("input").focus(); else avancar();
-      });
-      ul.appendChild(li);
-    });
-    somar();
-    corpo.append(ul, total);
-    const nota = document.createElement("p");
-    nota.className = "wiz-nota";
-    nota.textContent = "Para renomear, tirar ou adicionar contas, use a lista na tela do resultado.";
-    corpo.appendChild(nota);
-    setTimeout(() => { const i = ul.querySelector("input"); if (i) i.focus(); }, 0);
-  } else {
-    const wrap = document.createElement("div");
-    const inp = document.createElement("input");
-    inp.className = "valor"; inp.id = "wizInput"; inp.autocomplete = "off";
-    inp.setAttribute("aria-labelledby", "wizPergunta");
-    if (p.tipo === "horas"){
-      inp.inputMode = "decimal"; inp.value = p.get() ? String(p.get()).replace(".",",") : "";
-      wrap.className = "com-sufixo"; wrap.dataset.sufixo = "horas";
-    } else {
-      inp.inputMode = "numeric"; inp.value = brl(p.get() || 0);
-    }
-    inp.addEventListener("keydown", e => { if (e.key === "Enter") avancar(); });
-    wrap.appendChild(inp);
-    corpo.appendChild(wrap);
-
-    if (p.tipo === "horas"){
-      // atalhos de clique; digitar continua valendo
-      const box = document.createElement("div");
-      box.className = "chips"; box.setAttribute("role", "group"); box.setAttribute("aria-label", "Horas mais comuns");
-      const marcar = () => { const v = numDec(inp.value); box.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", Number(b.dataset.h) === v)); };
-      for (const [h, dica] of HORAS_COMUNS){
-        const b = document.createElement("button");
-        b.type = "button"; b.className = "chip"; b.dataset.h = h;
-        b.innerHTML = `<b>${h} h</b><span>${dica}</span>`;
-        b.addEventListener("click", () => { inp.value = String(h); marcar(); $("wizAjuda").classList.remove("erro"); });
-        box.appendChild(b);
-      }
-      inp.addEventListener("input", marcar);
-      marcar();
-      corpo.appendChild(box);
-    } else {
-      // slider ligado ao campo: mexer em um atualiza o outro
-      const esc = p.tipo === "gasto" ? ESCALA_GASTO : ESCALA_BRUTO;
-      const sl = document.createElement("input");
-      sl.type = "range"; sl.min = 0; sl.max = 1000; sl.step = 1;
-      sl.setAttribute("aria-label", "Ajustar valor");
-      sl.value = esc.slider(p.get() || 0);
-      sl.addEventListener("input", () => { inp.value = brl(esc.valor(Number(sl.value))); $("wizAjuda").classList.remove("erro"); });
-      inp.addEventListener("input", () => { const n = soNumero(inp.value); inp.value = n ? brl(n) : ""; sl.value = esc.slider(n); });
-      const marcas = document.createElement("div");
-      marcas.className = "wiz-marcas"; marcas.setAttribute("aria-hidden", "true");
-      marcas.innerHTML = `<span>${brl(esc.min)}</span><span>${brl(esc.max)}</span>`;
-      corpo.append(sl, marcas);
-    }
-    if (p.tipo === "gasto"){
-      const oq = document.createElement("input");
-      oq.className = "oque"; oq.id = "wizOque"; oq.placeholder = "Com o quê? (opcional, ex.: tênis)";
-      oq.style.width = "100%"; oq.value = estado.oque;
-      oq.addEventListener("keydown", e => { if (e.key === "Enter") avancar(); });
-      corpo.appendChild(oq);
-    }
-    setTimeout(() => { inp.focus(); inp.select(); }, 0);
-  }
-
-  $("wizVoltar").style.visibility = passo === 0 ? "hidden" : "visible";
-  $("wizContinuar").hidden = p.tipo === "escolha";
-  $("wizContinuar").textContent = passo === passos.length - 1 ? "Ver quanto custa →" : "Continuar →";
-  // reinicia a animação de entrada
-  const el = $("wizPasso"); el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
-}
-
-// resposta curta de uma etapa, para a trilha
-function resumoPasso(p){
-  const v = p.get();
-  if (p.tipo === "escolha") return v === "pj" ? "PJ" : "CLT";
-  if (p.tipo === "horas") return v ? String(v).replace(".", ",") + " h" : "—";
-  return brl(v || 0);
-}
-
-// trilha de etapas: agrupadas, com a resposta de cada uma e clique para ir direto
-function montarTrilha(){
-  const nav = $("wizTrilha");
-  nav.innerHTML = "";
-  const grupos = [];
-  passos.forEach((p, i) => {
-    let g = grupos[grupos.length - 1];
-    if (!g || g.nome !== p.grupo){ g = { nome:p.grupo, itens:[] }; grupos.push(g); }
-    g.itens.push(i);
-  });
-  for (const g of grupos){
-    const feitos = g.itens.filter(i => i <= alcancado && i !== passo).length;
-    const sec = document.createElement("div");
-    sec.className = "wiz-grupo" + (feitos === g.itens.length ? " feito" : "");
-    sec.innerHTML = `<h3><span>${escapar(g.nome)}</span><span>${feitos}/${g.itens.length}</span></h3>`;
-    const ol = document.createElement("ol");
-    for (const i of g.itens){
-      const p = passos[i];
-      const visto = i <= alcancado, atual = i === passo;
-      const nome = typeof p.rotulo === "function" ? p.rotulo() : p.rotulo;
-      const resp = visto && !atual ? resumoPasso(p) : "";
-      const li = document.createElement("li");
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "wiz-item" + (visto && !atual ? " feito" : "");
-      if (atual) b.setAttribute("aria-current", "step");
-      b.disabled = !visto;
-      b.title = resp ? `${nome}: ${resp}` : nome;
-      b.innerHTML = `<i aria-hidden="true"></i><span class="nome">${escapar(nome)}</span><span class="resp">${escapar(resp)}</span>`;
-      b.addEventListener("click", () => irPara(i));
-      li.appendChild(b); ol.appendChild(li);
-    }
-    sec.appendChild(ol);
-    nav.appendChild(sec);
-  }
-}
-
-// pula para uma etapa já vista, guardando o que estiver válido na atual
-function irPara(i){
-  if (i === passo || i > alcancado) return;
-  const p = passos[passo];
-  if (p.tipo !== "escolha" && p.tipo !== "contas"){
-    const bruto = $("wizInput").value;
-    const v = p.tipo === "horas" ? numDec(bruto) : soNumero(bruto);
-    if (!p.obrigatorio || v > 0) p.set(v);
-    if (p.tipo === "gasto") estado.oque = $("wizOque").value;
-    salvar();
-  }
-  passo = i; mostrarPasso();
-}
-
-// guarda a resposta do passo atual; devolve false se faltar algo obrigatório
-function lerPasso(){
-  const p = passos[passo];
-  if (p.tipo === "escolha" || p.tipo === "contas") return true;   // contas já são guardadas ao digitar
-  const bruto = $("wizInput").value;
-  const v = p.tipo === "horas" ? numDec(bruto) : soNumero(bruto);
-  if (p.obrigatorio && !(v > 0)){
-    $("wizAjuda").textContent = p.tipo === "horas" ? "Informe quantas horas, maior que zero." : "Informe um valor maior que zero.";
-    $("wizAjuda").classList.add("erro");
-    $("wizInput").focus();
-    return false;
-  }
-  p.set(v);
-  if (p.tipo === "gasto") estado.oque = $("wizOque").value;
-  return true;
-}
-
-function avancar(jaLido){
-  if (!jaLido && !lerPasso()) return;
-  salvar();
-  if (passo < passos.length - 1){ passo++; mostrarPasso(); }
-  else concluirAssistente();
-}
-
-function concluirAssistente(){
-  estado.perfilPronto = true;
-  passo = null;
-  salvar();
-  // leva as respostas para a tela completa
-  $bruto.value = brl(estado.bruto);
-  mostrarHoras();
-  montarContas();
-  $valor.value = brl(estado.valor);
-  $valorS.value = sliderDoValor(estado.valor);
-  $oque.value = estado.oque;
-  atualizar();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-$("wizContinuar").addEventListener("click", () => avancar());
-$("wizVoltar").addEventListener("click", () => { if (passo > 0){ passo--; mostrarPasso(); } });
-$("refazer").addEventListener("click", abrirAssistente);
-
-if (estado.modo === "gastar" && !estado.perfilPronto) abrirAssistente();
-else atualizar();
+atualizar();
 </script>
 </body>
 </html>
