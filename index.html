@@ -172,7 +172,34 @@
 
   /* passo a passo */
   body:not(.no-assistente) .horas, body.no-assistente .assistente{display:none!important}
-  .assistente{width:min(560px,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;text-align:left}
+  .assistente{width:min(820px,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;text-align:left;
+    display:grid;grid-template-columns:220px 1fr;gap:28px}
+  .wiz-principal{min-width:0}
+  /* trilha de etapas */
+  .wiz-trilha{border-right:1px solid var(--line);padding-right:20px;display:flex;flex-direction:column;gap:14px}
+  .wiz-grupo h3{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px;
+    display:flex;justify-content:space-between}
+  .wiz-grupo.feito h3{color:var(--cor)}
+  .wiz-grupo ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+  .wiz-item{width:100%;display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--ink);font:inherit;font-size:13px;
+    text-align:left;padding:5px 8px;border-radius:8px;cursor:pointer}
+  .wiz-item:hover:not(:disabled){background:var(--bg)}
+  .wiz-item:disabled{cursor:default;color:var(--muted);opacity:.6}
+  .wiz-item i{flex:none;width:8px;height:8px;border-radius:50%;border:2px solid var(--line)}
+  .wiz-item.feito i{background:var(--cor);border-color:var(--cor)}
+  .wiz-item[aria-current="step"]{background:var(--cor-soft);font-weight:600}
+  .wiz-item[aria-current="step"] i{border-color:var(--cor);background:var(--surface)}
+  .wiz-item .nome{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wiz-item .resp{flex:none;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+  @media (max-width:760px){
+    .assistente{grid-template-columns:1fr;gap:20px;padding:22px}
+    .wiz-trilha{border-right:0;border-bottom:1px solid var(--line);padding:0 0 16px;flex-direction:row;flex-wrap:wrap;gap:10px 16px}
+    .wiz-grupo h3{justify-content:flex-start;gap:6px}
+    .wiz-grupo ol{flex-direction:row;flex-wrap:wrap;gap:4px}
+    .wiz-item{width:auto;padding:4px}
+    .wiz-item .nome, .wiz-item .resp{display:none}
+    .wiz-item i{width:12px;height:12px}
+  }
   .wiz-prog{height:6px;background:var(--track);border-radius:3px;overflow:hidden}
   .wiz-prog i{display:block;height:100%;width:0;background:var(--cor);transition:width .3s ease}
   .wiz-passo{animation:entra .25s ease}
@@ -277,7 +304,9 @@
       </section>
     </div>
 
-    <section class="assistente so-gastar" id="assistente" aria-live="polite">
+    <section class="assistente so-gastar" id="assistente">
+      <nav class="wiz-trilha" id="wizTrilha" aria-label="Etapas do passo a passo"></nav>
+      <div class="wiz-principal" aria-live="polite">
       <div class="wiz-prog" aria-hidden="true"><i id="wizBarra"></i></div>
       <div class="wiz-passo" id="wizPasso">
         <div class="wiz-etapa" id="wizEtapa"></div>
@@ -288,6 +317,7 @@
       <div class="wiz-acoes">
         <button type="button" class="btn-sec" id="wizVoltar">← Voltar</button>
         <button type="button" class="btn-pri" id="wizContinuar">Continuar →</button>
+      </div>
       </div>
     </section>
 
@@ -718,27 +748,27 @@ function caber(el){
 window.addEventListener("resize", () => caber($("manchete")));
 
 /* ---------- passo a passo: uma pergunta por vez ---------- */
-let passo = null, passos = [];
+let passo = null, passos = [], alcancado = 0;
 
 function montarPassos(){
-  const dinheiro = (grupo, pergunta, ajuda, get, set, obrigatorio) => ({ tipo:"dinheiro", grupo, pergunta, ajuda, get, set, obrigatorio });
+  const dinheiro = (grupo, rotulo, pergunta, ajuda, get, set, obrigatorio) => ({ tipo:"dinheiro", grupo, rotulo, pergunta, ajuda, get, set, obrigatorio });
   passos = [
-    { tipo:"escolha", grupo:"Sua renda", pergunta:"Qual é a sua modalidade de trabalho?",
+    { tipo:"escolha", grupo:"Sua renda", rotulo:"Modalidade", pergunta:"Qual é a sua modalidade de trabalho?",
       ajuda:"Isso muda os descontos que saem do seu bruto.",
       opcoes:[["clt","CLT","Carteira assinada"],["pj","PJ","Empresa no Simples Nacional"]],
       get:() => estado.regime, set:v => { estado.regime = v; } },
-    dinheiro("Sua renda",
+    dinheiro("Sua renda", () => estado.regime === "pj" ? "Faturamento" : "Salário bruto",
       () => estado.regime === "pj" ? "Quanto você fatura por mês?" : "Qual é o seu salário bruto por mês?",
       () => estado.regime === "pj" ? "O valor das notas, antes dos impostos." : "O valor do contrato, antes dos descontos.",
       () => estado.bruto, v => { estado.bruto = v; }, true),
-    { tipo:"horas", grupo:"Sua renda", pergunta:"Quantas horas você trabalha por semana?",
+    { tipo:"horas", grupo:"Sua renda", rotulo:"Horas por semana", pergunta:"Quantas horas você trabalha por semana?",
       ajuda:"Conte as horas de verdade, com hora extra se for comum.",
       get:() => estado.horas[estado.regime], set:v => { estado.horas[estado.regime] = v; }, obrigatorio:true },
-    ...estado.contas.map(c => dinheiro("Contas básicas",
+    ...estado.contas.map(c => dinheiro("Contas básicas", c.nome || "Conta",
       `Quanto você paga de ${c.nome ? c.nome.toLowerCase() : "conta"} por mês?`,
       "Contas que você não tem como deixar de pagar. Coloque 0 se não tiver.",
       () => c.valor, v => { c.valor = v; }, false)),
-    { tipo:"gasto", grupo:"O gasto", pergunta:"E quanto você quer gastar?",
+    { tipo:"gasto", grupo:"O gasto", rotulo:"Valor do gasto", pergunta:"E quanto você quer gastar?",
       ajuda:"Pode ser qualquer coisa: um tênis, uma viagem, um jantar.",
       get:() => estado.valor, set:v => { estado.valor = v; }, obrigatorio:true }
   ];
@@ -747,6 +777,8 @@ function montarPassos(){
 function abrirAssistente(){
   estado.modo = "gastar";
   montarPassos(); passo = 0;
+  // refazendo: todas as etapas já foram respondidas, dá para pular para qualquer uma
+  alcancado = estado.perfilPronto ? passos.length - 1 : 0;
   atualizar(); mostrarPasso();
 }
 
@@ -755,6 +787,8 @@ function mostrarPasso(){
   const txt = v => typeof v === "function" ? v() : v;
   $("wizBarra").style.width = (passo / passos.length) * 100 + "%";
   $("wizEtapa").textContent = `${p.grupo} · ${passo + 1} de ${passos.length}`;
+  alcancado = Math.max(alcancado, passo);
+  montarTrilha();
   $("wizPergunta").textContent = txt(p.pergunta);
   $("wizAjuda").textContent = txt(p.ajuda);
   $("wizAjuda").classList.remove("erro");
@@ -803,6 +837,65 @@ function mostrarPasso(){
   $("wizContinuar").textContent = passo === passos.length - 1 ? "Ver quanto custa →" : "Continuar →";
   // reinicia a animação de entrada
   const el = $("wizPasso"); el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+}
+
+// resposta curta de uma etapa, para a trilha
+function resumoPasso(p){
+  const v = p.get();
+  if (p.tipo === "escolha") return v === "pj" ? "PJ" : "CLT";
+  if (p.tipo === "horas") return v ? String(v).replace(".", ",") + " h" : "—";
+  return brl(v || 0);
+}
+
+// trilha de etapas: agrupadas, com a resposta de cada uma e clique para ir direto
+function montarTrilha(){
+  const nav = $("wizTrilha");
+  nav.innerHTML = "";
+  const grupos = [];
+  passos.forEach((p, i) => {
+    let g = grupos[grupos.length - 1];
+    if (!g || g.nome !== p.grupo){ g = { nome:p.grupo, itens:[] }; grupos.push(g); }
+    g.itens.push(i);
+  });
+  for (const g of grupos){
+    const feitos = g.itens.filter(i => i <= alcancado && i !== passo).length;
+    const sec = document.createElement("div");
+    sec.className = "wiz-grupo" + (feitos === g.itens.length ? " feito" : "");
+    sec.innerHTML = `<h3><span>${escapar(g.nome)}</span><span>${feitos}/${g.itens.length}</span></h3>`;
+    const ol = document.createElement("ol");
+    for (const i of g.itens){
+      const p = passos[i];
+      const visto = i <= alcancado, atual = i === passo;
+      const nome = typeof p.rotulo === "function" ? p.rotulo() : p.rotulo;
+      const resp = visto && !atual ? resumoPasso(p) : "";
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "wiz-item" + (visto && !atual ? " feito" : "");
+      if (atual) b.setAttribute("aria-current", "step");
+      b.disabled = !visto;
+      b.title = resp ? `${nome}: ${resp}` : nome;
+      b.innerHTML = `<i aria-hidden="true"></i><span class="nome">${escapar(nome)}</span><span class="resp">${escapar(resp)}</span>`;
+      b.addEventListener("click", () => irPara(i));
+      li.appendChild(b); ol.appendChild(li);
+    }
+    sec.appendChild(ol);
+    nav.appendChild(sec);
+  }
+}
+
+// pula para uma etapa já vista, guardando o que estiver válido na atual
+function irPara(i){
+  if (i === passo || i > alcancado) return;
+  const p = passos[passo];
+  if (p.tipo !== "escolha"){
+    const bruto = $("wizInput").value;
+    const v = p.tipo === "horas" ? numDec(bruto) : soNumero(bruto);
+    if (!p.obrigatorio || v > 0) p.set(v);
+    if (p.tipo === "gasto") estado.oque = $("wizOque").value;
+    salvar();
+  }
+  passo = i; mostrarPasso();
 }
 
 // guarda a resposta do passo atual; devolve false se faltar algo obrigatório
